@@ -39,7 +39,7 @@ const CustomTooltip = ({ active, payload, label }) => {
 
 const CustomLegend = ({ payload, toggleSeries, hiddenSeries }) => {
   return (
-    <div className="flex flex-wrap gap-4 justify-center mb-6">
+    <div className="flex flex-wrap gap-4 justify-center mb-2">
       {payload.map((entry, index) => (
         <button
           key={`legend-${index}`}
@@ -116,9 +116,17 @@ export default function ModernChart({ labels, datasets, title }) {
     clonedSvg.setAttribute("width", rect.width);
     clonedSvg.setAttribute("height", rect.height);
     
-    // Ensure styles that might be computed are inline if necessary (Recharts usually handles this, 
-    // but explicit background color on the rect helps)
-    
+        <div className="mt-2 py-2">
+          <CustomLegend 
+            payload={datasets.map((ds, i) => ({
+              dataKey: ds.label,
+              color: ds.borderColor,
+              value: ds.label,
+            }))}
+            toggleSeries={toggleSeries}
+            hiddenSeries={hiddenSeries}
+          />
+        </div>
     // Serialize SVG to XML string
     const serializer = new XMLSerializer();
     let svgStr = serializer.serializeToString(clonedSvg);
@@ -175,7 +183,8 @@ export default function ModernChart({ labels, datasets, title }) {
   };
 
   return (
-    <div className="w-full h-[300px] sm:h-[400px] lg:h-[500px] space-y-3" ref={chartContainerRef}>
+    <div className="w-full space-y-3">
+      {/* Controls */}
       <div className="flex justify-start sm:justify-end items-center gap-3 text-sm text-gray-600 flex-wrap">
         <button
           onClick={handleDownload}
@@ -201,57 +210,69 @@ export default function ModernChart({ labels, datasets, title }) {
           </select>
         </label>
       </div>
-      <ResponsiveContainer width="100%" height="100%">
-        <AreaChart 
-          data={chartData}
-          margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
-        >
-          <CartesianGrid 
-            strokeDasharray="3 3" 
-            stroke="#e5e7eb" 
-            vertical={false}
-          />
-          <XAxis 
-            dataKey="date" 
-            stroke="#9ca3af"
-            tick={{ fontSize: 12 }}
-            tickLine={false}
-            interval="preserveStartEnd"
-            minTickGap={50}
-          />
-          <YAxis 
-            stroke="#9ca3af"
-            tick={{ fontSize: 12 }}
-            tickLine={false}
-            domain={[0, 100]}
-            label={{ 
-              value: 'Market Share (%)', 
-              angle: -90, 
-              position: 'insideLeft',
-              style: { fontSize: 12, fill: '#6b7280' }
-            }}
-          />
-          <Tooltip content={<CustomTooltip />} />
-          <Legend 
-            content={<CustomLegend toggleSeries={toggleSeries} hiddenSeries={hiddenSeries} />}
-            wrapperStyle={{ paddingTop: '20px' }}
-          />
-          {datasets.map((dataset, index) => (
-            <Area
-              key={index}
-              type="monotone"
-              dataKey={dataset.label}
-              stackId="1"
-              stroke={dataset.borderColor}
-              fill={dataset.backgroundColor}
-              strokeWidth={2}
-              hide={hiddenSeries.has(dataset.label)}
-              animationDuration={800}
-              animationEasing="ease-in-out"
+
+      {/* Chart container with fixed height */}
+      <div className="w-full h-[300px] sm:h-[400px] lg:h-[500px]" ref={chartContainerRef}>
+        <ResponsiveContainer width="100%" height="100%">
+          <AreaChart 
+            data={chartData}
+            margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
+          >
+            <CartesianGrid 
+              strokeDasharray="3 3" 
+              stroke="#e5e7eb" 
+              vertical={false}
             />
-          ))}
-        </AreaChart>
-      </ResponsiveContainer>
+            <XAxis 
+              dataKey="date" 
+              stroke="#9ca3af"
+              tick={{ fontSize: 12 }}
+              tickLine={false}
+              interval="preserveStartEnd"
+              minTickGap={50}
+            />
+            <YAxis 
+              stroke="#9ca3af"
+              tick={{ fontSize: 12 }}
+              tickLine={false}
+              domain={[0, 100]}
+              label={{ 
+                value: 'Market Share (%)', 
+                angle: -90, 
+                position: 'insideLeft',
+                style: { fontSize: 12, fill: '#6b7280' }
+              }}
+            />
+            <Tooltip content={<CustomTooltip />} />
+            {datasets.map((dataset, index) => (
+              <Area
+                key={index}
+                type="monotone"
+                dataKey={dataset.label}
+                stackId="1"
+                stroke={dataset.borderColor}
+                fill={dataset.backgroundColor}
+                strokeWidth={2}
+                hide={hiddenSeries.has(dataset.label)}
+                animationDuration={800}
+                animationEasing="ease-in-out"
+              />
+            ))}
+          </AreaChart>
+        </ResponsiveContainer>
+      </div>
+
+      <div>
+        <CustomLegend 
+          payload={datasets.map((ds, i) => ({
+            dataKey: ds.label,
+            color: ds.borderColor,
+            value: ds.label,
+          }))}
+          toggleSeries={toggleSeries}
+          hiddenSeries={hiddenSeries}
+        />
+      </div>
     </div>
   );
 }
