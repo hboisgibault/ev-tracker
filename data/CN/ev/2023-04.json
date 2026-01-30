@@ -1,0 +1,14 @@
+{
+  "year": 2023,
+  "month": 4,
+  "data": [
+    {
+      "marque": "所有品牌",
+      "modele": "所有车型",
+      "total": 165000,
+      "energie": "PHEV"
+    }
+  ],
+  "region": "CN",
+  "type": "all"
+}

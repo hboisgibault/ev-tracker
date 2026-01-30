@@ -1,0 +1,26 @@
+{
+  "year": 2025,
+  "month": 8,
+  "data": [
+    {
+      "marque": "所有品牌",
+      "modele": "所有车型",
+      "total": 908000,
+      "energie": "BEV"
+    },
+    {
+      "marque": "所有品牌",
+      "modele": "所有车型",
+      "total": 487000,
+      "energie": "PHEV"
+    },
+    {
+      "marque": "所有品牌",
+      "modele": "所有车型",
+      "total": 1462000,
+      "energie": "FOSSIL"
+    }
+  ],
+  "region": "CN",
+  "type": "all"
+}

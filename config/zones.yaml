@@ -31,3 +31,11 @@ zones:
         script: DE
         function: fetchAllEVData
         source: "Kraftfahrt-Bundesamt (KBA)"
+  CN:
+    name: China
+    code: CN
+    parsers:
+      ev:
+        script: CN
+        function: fetchAllEVData
+        source: "China Association of Automobile Manufacturers (CAAM)"

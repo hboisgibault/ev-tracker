@@ -6,7 +6,12 @@ const path = require('path');
 function fetchFile(url, maxRedirects = 5) {
 	return new Promise((resolve, reject) => {
 		function request(currentUrl, redirectsLeft) {
-			const req = https.get(currentUrl, (res) => {
+			const req = https.get(currentUrl, {
+				rejectUnauthorized: false, // Pour les sites avec certificats stricts
+				headers: {
+					'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+				}
+			}, (res) => {
 				if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location && redirectsLeft > 0) {
                     res.resume(); // Consume response body to free socket
 					const nextUrl = res.headers.location.startsWith('http') ? res.headers.location : new URL(res.headers.location, currentUrl).toString();
