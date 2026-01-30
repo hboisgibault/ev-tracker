@@ -179,6 +179,7 @@ const leaderboard = countrySummaries
   .slice(0, 6);
 
 const pageUrl = `${SITE_URL}/`;
+const socialImage = `${SITE_URL}/default-og.png`; // Assurez-vous d'ajouter cette image dans public/
 const ldJson = {
   '@context': 'https://schema.org',
   '@type': 'WebSite',
@@ -194,9 +195,10 @@ const ldJson = {
 };
 ---
 <Layout
-  title="EV Adoption Tracker - Home"
+  title="Global EV Market Share & Adoption Dashboard | EV Tracker"
   description={DEFAULT_DESCRIPTION}
   url={pageUrl}
+  ogImage={socialImage}
   ldJson={ldJson}
 >
   <div class="space-y-6">
@@ -204,9 +206,9 @@ const ldJson = {
     <!-- Hero / Title -->
     <div class="text-center md:text-left md:flex md:items-end md:justify-between mb-8">
       <div>
-        <h1 class="text-3xl font-bold text-gray-900 tracking-tight">Global Dashboard</h1>
+        <h1 class="text-3xl font-bold text-gray-900 tracking-tight">Global Electric Vehicle Adoption Dashboard</h1>
         <p class="text-gray-500 mt-2 max-w-2xl">
-          Visualizing the transition from combustion engines to electric powertrains.
+          Visualizing the transition from combustion engines to electric powertrains worldwide.
         </p>
       </div>
     </div>
