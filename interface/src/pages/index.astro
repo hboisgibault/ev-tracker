@@ -295,11 +295,11 @@ const ldJson = {
         <p class="text-sm text-gray-500">Market share by powertrain type over time — Click on legend items to toggle</p>
       </div>
       {monthlyStats.length > 0 ? (
-        <div class="w-full h-[500px]">
+        <div class="w-full">
           <ModernChart client:only="react" labels={chartLabels} datasets={datasets} />
         </div>
       ) : (
-        <div class="w-full h-[500px] flex items-center justify-center bg-gray-50 rounded-lg">
+        <div class="w-full h-[300px] sm:h-[400px] lg:h-[500px] flex items-center justify-center bg-gray-50 rounded-lg">
           <p class="text-gray-500">No data available for all zones</p>
         </div>
       )}

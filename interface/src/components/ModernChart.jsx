@@ -175,8 +175,8 @@ export default function ModernChart({ labels, datasets, title }) {
   };
 
   return (
-    <div className="w-full h-[500px] space-y-3" ref={chartContainerRef}>
-      <div className="flex justify-end items-center gap-3 text-sm text-gray-600">
+    <div className="w-full h-[300px] sm:h-[400px] lg:h-[500px] space-y-3" ref={chartContainerRef}>
+      <div className="flex justify-start sm:justify-end items-center gap-3 text-sm text-gray-600 flex-wrap">
         <button
           onClick={handleDownload}
           className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-blue-700 bg-blue-50 hover:bg-blue-100 rounded-md transition-colors border border-blue-200"
