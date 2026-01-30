@@ -1,6 +1,6 @@
 # EV Tracker
 
-**EV Tracker** is an open-source project dedicated to collecting, harmonizing, and visualizing registration statistics for electric vehicles (and other powertrains) across several European countries.
+[**EV Tracker**](https://ev-tracker.com) is an open-source project dedicated to collecting, harmonizing, and visualizing registration statistics for electric vehicles (and other powertrains) across several European countries.
 
 The project consists of two main parts:
 1. **Data Collection**: Node.js scripts to extract data from official sources (government or statistical agencies).
