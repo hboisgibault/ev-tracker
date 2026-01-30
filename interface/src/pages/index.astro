@@ -64,6 +64,10 @@ const countrySummaries = [];
 availableZones.forEach(([code, zone]) => {
   const dataDir = path.join(process.cwd(), '../data', code, 'ev');
   
+  if (!fs.existsSync(dataDir)) {
+      return;
+  }
+
   try {
     const files = fs.readdirSync(dataDir).filter(f => f.endsWith('.json')).sort();
     if (files.length > 0) {
@@ -179,7 +183,6 @@ const leaderboard = countrySummaries
   .slice(0, 6);
 
 const pageUrl = `${SITE_URL}/`;
-const socialImage = `${SITE_URL}/default-og.png`; // Assurez-vous d'ajouter cette image dans public/
 const ldJson = {
   '@context': 'https://schema.org',
   '@type': 'WebSite',
@@ -198,7 +201,6 @@ const ldJson = {
   title="Global EV Market Share & Adoption Dashboard | EV Tracker"
   description={DEFAULT_DESCRIPTION}
   url={pageUrl}
-  ogImage={socialImage}
   ldJson={ldJson}
 >
   <div class="space-y-6">
@@ -208,7 +210,7 @@ const ldJson = {
       <div>
         <h1 class="text-3xl font-bold text-gray-900 tracking-tight">Global Electric Vehicle Adoption Dashboard</h1>
         <p class="text-gray-500 mt-2 max-w-2xl">
-          Visualizing the transition from combustion engines to electric powertrains worldwide.
+          Visualizing the transition from combustion engines to electric powertrains.
         </p>
       </div>
     </div>
@@ -294,7 +296,7 @@ const ldJson = {
       </div>
       {monthlyStats.length > 0 ? (
         <div class="w-full h-[500px]">
-          <ModernChart client:load labels={chartLabels} datasets={datasets} />
+          <ModernChart client:only="react" labels={chartLabels} datasets={datasets} />
         </div>
       ) : (
         <div class="w-full h-[500px] flex items-center justify-center bg-gray-50 rounded-lg">

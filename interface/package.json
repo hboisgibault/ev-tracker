@@ -17,6 +17,7 @@
     "@astrojs/sitemap": "^3.7.0",
     "@tailwindcss/postcss": "^4.1.18",
     "astro": "^5.16.16",
+    "js-yaml": "^4.1.1",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
     "recharts": "^3.7.0",
