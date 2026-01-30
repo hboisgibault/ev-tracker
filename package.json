@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "description": "Collection and tracking of electric vehicle and energy statistics by country.",
   "main": "index.js",
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
     "collect": "node scripts/collect.js",
     "lint": "eslint .",

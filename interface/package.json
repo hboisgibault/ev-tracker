@@ -2,6 +2,9 @@
   "name": "ev-tracker-interface",
   "type": "module",
   "version": "0.0.1",
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
     "dev": "astro dev",
     "start": "astro dev",
@@ -14,9 +17,7 @@
     "@astrojs/sitemap": "^3.7.0",
     "@tailwindcss/postcss": "^4.1.18",
     "astro": "^5.16.16",
-    "chart.js": "^4.5.1",
     "react": "^19.2.4",
-    "react-chartjs-2": "^5.3.1",
     "react-dom": "^19.2.4",
     "recharts": "^3.7.0",
     "tailwindcss": "^4.1.18"
