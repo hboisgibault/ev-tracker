@@ -1,0 +1,32 @@
+{
+  "year": 2019,
+  "month": 5,
+  "data": [
+    {
+      "marque": "ALL",
+      "modele": "ALL",
+      "total": 41232,
+      "energie": "GASOLINE"
+    },
+    {
+      "marque": "ALL",
+      "modele": "ALL",
+      "total": 3089,
+      "energie": "DIESEL"
+    },
+    {
+      "marque": "ALL",
+      "modele": "ALL",
+      "total": 7321,
+      "energie": "BEV"
+    },
+    {
+      "marque": "ALL",
+      "modele": "ALL",
+      "total": 171,
+      "energie": "LPG_CNG_OTHER"
+    }
+  ],
+  "region": "NL",
+  "type": "all"
+}

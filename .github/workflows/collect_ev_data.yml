@@ -1,0 +1,42 @@
+name: Collect All EV Stats
+
+on:
+  schedule:
+    - cron: '0 2 * * *' # Tous les jours à 2h UTC
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  collect-by-country:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        zone: [FR, NO, NL]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install dependencies
+        run: |
+          npm install || true
+
+      - name: Run EV parser for ${{ matrix.zone }}
+        run: |
+          npm run collect ${{ matrix.zone }}
+
+      - name: Commit and push changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git pull --rebase
+          git add data/${{ matrix.zone }}/ev/*.json
+          git commit -m "Mise à jour stats EV ${{ matrix.zone }} [automatique]" || echo "Rien à commit"
+          git push

@@ -1,0 +1,324 @@
+---
+// src/pages/index.astro
+import Layout from '../layouts/Layout.astro';
+import ModernChart from '../components/ModernChart.jsx';
+import fs from 'node:fs';
+import path from 'node:path';
+import yaml from 'js-yaml';
+import { slugify } from '../utils/slugify.js';
+import { ENERGY_COLORS, ENERGY_LABELS } from '../config/energy.js';
+import { SITE_URL, DEFAULT_DESCRIPTION } from '../config/site.js';
+
+// Load available zones from config
+const zonesPath = path.join(process.cwd(), '../config/zones.yaml');
+const zonesConfig = yaml.load(fs.readFileSync(zonesPath, 'utf-8'));
+const availableZones = Object.entries(zonesConfig.zones);
+
+// --- Data Loading Logic (Aggregate all zones) ---
+
+// First pass: detect if any source uses FOSSIL
+let hasFossilData = false;
+for (const [code, zone] of availableZones) {
+  const dataDir = path.join(process.cwd(), '../data', code, 'ev');
+  try {
+    const files = fs.readdirSync(dataDir).filter(f => f.endsWith('.json'));
+    for (const filename of files) {
+      const filePath = path.join(dataDir, filename);
+      const content = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
+      if (content.data.some(item => item.energie === 'FOSSIL')) {
+        hasFossilData = true;
+        break;
+      }
+    }
+    if (hasFossilData) break;
+  } catch (e) {
+    // ignore
+  }
+}
+
+// Define energy categories based on data structure
+const ENERGY_ORDER = hasFossilData 
+  ? ['FOSSIL', 'LPG_CNG_OTHER', 'HYBRID', 'PHEV', 'BEV']
+  : ['DIESEL', 'GASOLINE', 'LPG_CNG_OTHER', 'HYBRID', 'PHEV', 'BEV'];
+
+// Helper to normalize energy types based on aggregation mode
+const normalizeEnergy = (energy) => {
+  if (hasFossilData && (energy === 'DIESEL' || energy === 'GASOLINE')) {
+    return 'FOSSIL';
+  }
+  return energy;
+};
+
+const getShare = (stats, keys) => {
+  if (!stats || !stats.total) return 0;
+  let vol = 0;
+  keys.forEach(k => vol += (stats.byEnergy[k] || 0));
+  return (vol / stats.total * 100);
+};
+
+// Load and aggregate data from all zones
+const aggregatedData = {};
+const zonesWithData = new Set();
+const countrySummaries = [];
+
+availableZones.forEach(([code, zone]) => {
+  const dataDir = path.join(process.cwd(), '../data', code, 'ev');
+  
+  try {
+    const files = fs.readdirSync(dataDir).filter(f => f.endsWith('.json')).sort();
+    if (files.length > 0) {
+      zonesWithData.add(code); // Mark this zone as having data
+    }
+
+    const monthlyStatsCountry = [];
+
+    files.forEach(filename => {
+      const filePath = path.join(dataDir, filename);
+      const content = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
+      const date = `${content.year}-${String(content.month).padStart(2, '0')}`;
+
+      if (!aggregatedData[date]) {
+        aggregatedData[date] = { total: 0, byEnergy: {}, zones: new Set() };
+      }
+
+      const stat = { date, total: 0, byEnergy: {} };
+
+      content.data.forEach(item => {
+        const energy = normalizeEnergy(item.energie);
+        stat.byEnergy[energy] = (stat.byEnergy[energy] || 0) + item.total;
+        stat.total += item.total;
+        aggregatedData[date].byEnergy[energy] = (aggregatedData[date].byEnergy[energy] || 0) + item.total;
+        aggregatedData[date].total += item.total;
+      });
+
+      aggregatedData[date].zones.add(code);
+      monthlyStatsCountry.push(stat);
+    });
+
+    if (monthlyStatsCountry.length) {
+      const last = monthlyStatsCountry[monthlyStatsCountry.length - 1];
+      const prev = monthlyStatsCountry[monthlyStatsCountry.length - 2];
+      const bevShareCurr = getShare(last, ['BEV']);
+      const bevSharePrev = prev ? getShare(prev, ['BEV']) : null;
+      countrySummaries.push({
+        code,
+        name: zone.name,
+        bevShare: bevShareCurr,
+        bevMoM: bevSharePrev !== null ? bevShareCurr - bevSharePrev : null,
+        lastDate: last.date
+      });
+    }
+  } catch (e) {
+    console.error(`Error reading data for zone ${code}:`, e);
+  }
+});
+
+const totalZones = zonesWithData.size;
+
+// Convert to sorted array; keep all months but track coverage
+const monthlyStatsAll = Object.entries(aggregatedData)
+  .map(([date, data]) => ({
+    date,
+    ...data,
+    zonesCount: data.zones.size,
+    coverage: totalZones ? data.zones.size / totalZones : 0
+  }))
+  .sort((a, b) => a.date.localeCompare(b.date));
+
+// Separate fully covered months (all zones present)
+const monthlyStatsFull = monthlyStatsAll.filter(s => s.coverage === 1);
+
+const monthlyStats = monthlyStatsAll;
+
+// Chart data: drop the latest month if coverage is incomplete
+const monthlyStatsChart = [...monthlyStatsAll];
+const lastChartPoint = monthlyStatsChart[monthlyStatsChart.length - 1];
+if (lastChartPoint && lastChartPoint.coverage < 1) {
+  monthlyStatsChart.pop();
+}
+
+// Datasets for the chart
+const chartLabels = monthlyStatsChart.map(s => s.date);
+const datasets = ENERGY_ORDER.map(energyKey => {
+  return {
+    label: ENERGY_LABELS[energyKey] || energyKey,
+    data: monthlyStatsChart.map(stat => {
+       const vol = stat.byEnergy[energyKey] || 0;
+       return stat.total > 0 ? (vol / stat.total * 100) : 0;
+    }),
+    borderColor: ENERGY_COLORS[energyKey]?.stroke || '#000',
+    backgroundColor: ENERGY_COLORS[energyKey]?.fill || '#ccc',
+    fill: true,
+    tension: 0.4,
+    pointRadius: 0,
+    borderWidth: 1
+  };
+}).reverse();
+
+// KPI Calculation (Last known month)
+// KPIs prefer full-coverage months; fall back to latest available
+const lastMonth = (monthlyStatsFull[monthlyStatsFull.length - 1] || monthlyStats[monthlyStats.length - 1]) || { byEnergy: {}, total: 0, date: 'N/A' };
+const prevYearMonth = (monthlyStatsFull[monthlyStatsFull.length - 13] || monthlyStats[monthlyStats.length - 13]) || { byEnergy: {}, total: 0 };
+
+const bevShare = getShare(lastMonth, ['BEV']);
+const bevSharePrev = getShare(prevYearMonth, ['BEV']);
+const bevGrowth = bevShare - bevSharePrev;
+
+const phevShare = getShare(lastMonth, ['PHEV']);
+const thermalShare = hasFossilData 
+  ? getShare(lastMonth, ['FOSSIL'])
+  : getShare(lastMonth, ['DIESEL', 'GASOLINE']);
+
+// Formatting
+const formatPercent = (n) => n.toFixed(1) + '%';
+const formatNumber = (n) => new Intl.NumberFormat('en-US').format(n);
+
+const leaderboard = countrySummaries
+  .filter(c => c.bevShare !== null && c.lastDate)
+  .sort((a, b) => b.bevShare - a.bevShare)
+  .slice(0, 6);
+
+const pageUrl = `${SITE_URL}/`;
+const ldJson = {
+  '@context': 'https://schema.org',
+  '@type': 'WebSite',
+  name: 'EV Tracker',
+  url: SITE_URL,
+  description: DEFAULT_DESCRIPTION,
+  inLanguage: 'en',
+  potentialAction: {
+    '@type': 'SearchAction',
+    target: `${SITE_URL}/country/{search_term_string}/ev-market-share`,
+    'query-input': 'required name=search_term_string'
+  }
+};
+---
+<Layout
+  title="EV Adoption Tracker - Home"
+  description={DEFAULT_DESCRIPTION}
+  url={pageUrl}
+  ldJson={ldJson}
+>
+  <div class="space-y-6">
+    
+    <!-- Hero / Title -->
+    <div class="text-center md:text-left md:flex md:items-end md:justify-between mb-8">
+      <div>
+        <h1 class="text-3xl font-bold text-gray-900 tracking-tight">Global Dashboard</h1>
+        <p class="text-gray-500 mt-2 max-w-2xl">
+          Visualizing the transition from combustion engines to electric powertrains.
+        </p>
+      </div>
+    </div>
+
+    <!-- KPIs Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      
+      <!-- BEV Card -->
+      <div class="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow p-6 border border-gray-100 relative overflow-hidden">
+        <div class="absolute top-0 right-0 w-24 h-24 bg-green-50 rounded-full -mr-12 -mt-12"></div>
+        <h3 class="text-sm font-semibold text-gray-500 uppercase tracking-wider relative z-10">BEV Market Share</h3>
+        <div class="mt-4 flex items-baseline relative z-10">
+          <p class="text-4xl font-extrabold text-gray-900">{formatPercent(bevShare)}</p>
+          <span class={`ml-2 text-sm font-medium flex items-center ${bevGrowth >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+            {bevGrowth >= 0 ? '↑' : '↓'} {Math.abs(bevGrowth).toFixed(1)} pts YoY
+          </span>
+        </div>
+        <p class="mt-1 text-sm text-gray-400 relative z-10">Fully Electric Vehicles</p>
+      </div>
+
+      <!-- PHEV Card -->
+      <div class="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow p-6 border border-gray-100">
+        <h3 class="text-sm font-semibold text-gray-500 uppercase tracking-wider">Electrified (BEV + PHEV)</h3>
+        <div class="mt-4 flex items-baseline">
+          <p class="text-4xl font-extrabold text-blue-900">{formatPercent(bevShare + phevShare)}</p>
+        </div>
+        <p class="mt-1 text-sm text-gray-400">Includes Plug-in Hybrids</p>
+      </div>
+
+      <!-- Thermal Card -->
+      <div class="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow p-6 border border-gray-100">
+        <h3 class="text-sm font-semibold text-gray-500 uppercase tracking-wider">Pure Thermal</h3>
+        <div class="mt-4 flex items-baseline">
+          <p class="text-4xl font-extrabold text-gray-700">{formatPercent(thermalShare)}</p>
+        </div>
+        <p class="mt-1 text-sm text-gray-400">Diesel & Gasoline (excl. hybrids)</p>
+      </div>
+    </div>
+
+    <!-- Leaderboard -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+      <div class="flex items-center justify-between mb-4">
+        <div>
+          <h2 class="text-xl font-bold text-gray-800">Top Countries (BEV share)</h2>
+          <p class="text-sm text-gray-500">Classement par part BEV, avec évolution MoM</p>
+        </div>
+      </div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        {leaderboard.map((item, idx) => (
+          <a href={`/country/${slugify(item.name)}/ev-market-share`} class="block group">
+            <div class="rounded-lg border border-gray-200 p-4 hover:border-blue-400 hover:ring-1 hover:ring-blue-400 transition-all h-full">
+              <div class="flex items-center justify-between mb-2">
+                <span class="text-sm font-semibold text-gray-500">#{idx + 1}</span>
+                <span class="text-xs font-medium px-2 py-0.5 rounded-full bg-gray-100 text-gray-700">{item.lastDate}</span>
+              </div>
+              <div class="flex items-center justify-between">
+                <div class="flex flex-col">
+                  <span class="text-lg font-semibold text-gray-900 group-hover:text-blue-700">{item.name}</span>
+                  <span class="text-sm text-gray-500">BEV share</span>
+                </div>
+                <div class="text-right">
+                  <div class="text-3xl font-bold text-gray-900">{formatPercent(item.bevShare)}</div>
+                  {item.bevMoM !== null ? (
+                    <div class={`text-sm font-semibold ${item.bevMoM >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                      {item.bevMoM >= 0 ? '↑' : '↓'} {Math.abs(item.bevMoM).toFixed(1)} pts MoM
+                    </div>
+                  ) : (
+                    <div class="text-sm text-gray-400">No prior month</div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </a>
+        ))}
+      </div>
+    </div>
+
+    <!-- Chart Section -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+      <div class="mb-6">
+        <h2 class="text-xl font-bold text-gray-800">Historical Evolution</h2>
+        <p class="text-sm text-gray-500">Market share by powertrain type over time — Click on legend items to toggle</p>
+      </div>
+      {monthlyStats.length > 0 ? (
+        <div class="w-full h-[500px]">
+          <ModernChart client:load labels={chartLabels} datasets={datasets} />
+        </div>
+      ) : (
+        <div class="w-full h-[500px] flex items-center justify-center bg-gray-50 rounded-lg">
+          <p class="text-gray-500">No data available for all zones</p>
+        </div>
+      )}
+    </div>
+
+    <!-- Available Countries Grid -->
+    <div>
+        <h2 class="text-xl font-bold text-gray-800 mb-4">Available Countries</h2>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {availableZones.map(([code, zone]) => (
+              <a href={`/country/${slugify(zone.name)}/ev-market-share`} class="group block">
+                <div class="bg-white rounded-lg border border-gray-200 p-4 hover:border-blue-400 hover:ring-1 hover:ring-blue-400 transition-all cursor-pointer">
+                  <div class="flex items-center justify-between">
+                    <span class="text-lg font-semibold text-gray-900 group-hover:text-blue-600">{zone.name}</span>
+                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
+                      Active
+                    </span>
+                  </div>
+                </div>
+              </a>
+            ))}
+        </div>
+    </div>
+
+  </div>
+</Layout>

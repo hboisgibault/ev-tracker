@@ -1,0 +1,47 @@
+---
+interface Props {
+	title: string;
+	description?: string;
+	url?: string;
+	ogImage?: string;
+	ldJson?: any;
+}
+
+const { title, description, url, ogImage, ldJson } = Astro.props;
+const metaDescription = description || 'Electric Vehicle Adoption Tracker - Visualize market share and trends';
+import '../styles/global.css';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+---
+
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="description" content={metaDescription} />
+		<meta name="viewport" content="width=device-width" />
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<meta name="generator" content={Astro.generator} />
+		<title>{title}</title>
+		{url && <link rel="canonical" href={url} />}
+		<meta property="og:type" content="website" />
+		<meta property="og:title" content={title} />
+		<meta property="og:description" content={metaDescription} />
+		{url && <meta property="og:url" content={url} />}
+		{ogImage && <meta property="og:image" content={ogImage} />}
+		<meta name="twitter:card" content="summary_large_image" />
+		<meta name="twitter:title" content={title} />
+		<meta name="twitter:description" content={metaDescription} />
+		{ogImage && <meta name="twitter:image" content={ogImage} />}
+		{ldJson && (
+			<script type="application/ld+json">{JSON.stringify(ldJson)}</script>
+		)}
+	</head>
+	<body class="bg-gray-50 flex flex-col min-h-screen">
+		<Header />
+		<main class="flex-grow w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+			<slot />
+		</main>
+		<Footer />
+	</body>
+</html>

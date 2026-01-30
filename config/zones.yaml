@@ -1,0 +1,33 @@
+zones:
+  FR:
+    name: France
+    code: FR
+    parsers:
+      ev:
+        script: FR
+        function: fetchAllEVData
+        source: "Ministère de la Transition Écologique (statistiques.developpement-durable.gouv.fr)"
+  NO:
+    name: Norway
+    code: NO
+    parsers:
+      ev:
+        script: NO
+        function: fetchAllEVData
+        source: "OFV / SSB (immatriculations)"
+  NL:
+    name: Netherlands
+    code: NL
+    parsers:
+      ev:
+        script: NL
+        function: fetchAllEVData
+        source: "RDW / CBS (immatriculations)"
+  DE:
+    name: Germany
+    code: DE
+    parsers:
+      ev:
+        script: DE
+        function: fetchAllEVData
+        source: "Kraftfahrt-Bundesamt (KBA)"

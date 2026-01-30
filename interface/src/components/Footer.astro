@@ -1,0 +1,32 @@
+---
+const currentYear = new Date().getFullYear();
+---
+<footer class="bg-gray-900 text-white mt-auto">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+      <div>
+        <h3 class="text-lg font-semibold mb-4 text-blue-400">EV Tracker</h3>
+        <p class="text-gray-400 text-sm leading-relaxed">
+          Open source project tracking the adoption of electric vehicles in France and Europe. visualizing market trends with precision.
+        </p>
+      </div>
+      <div>
+        <h3 class="text-lg font-semibold mb-4 text-blue-400">Links</h3>
+        <ul class="space-y-2 text-sm text-gray-400">
+          <li><a href="/" class="hover:text-white transition-colors">Home</a></li>
+          <li><a href="#" class="hover:text-white transition-colors">Methodology</a></li>
+          <li><a href="#" class="hover:text-white transition-colors">Data Sources</a></li>
+        </ul>
+      </div>
+      <div>
+        <h3 class="text-lg font-semibold mb-4 text-blue-400">Data</h3>
+        <p class="text-gray-400 text-sm">
+          Data sourced from official government publications and aggregated for easy consumption.
+        </p>
+      </div>
+    </div>
+    <div class="border-t border-gray-800 mt-8 pt-8 text-center text-sm text-gray-400">
+      <p>&copy; {currentYear} EV Tracker. Licensed under GPL.</p>
+    </div>
+  </div>
+</footer>
