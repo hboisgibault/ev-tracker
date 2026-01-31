@@ -9,12 +9,27 @@ permissions:
   contents: write
 
 jobs:
+  get-zones:
+    runs-on: ubuntu-latest
+    outputs:
+      zones: ${{ steps.set-zones.outputs.zones }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Extract zones from zones.yaml
+        id: set-zones
+        run: |
+          ZONES=$(yq eval '.zones | keys | .[]' config/zones.yaml | jq -R -s -c 'split("\n") | map(select(length > 0))')
+          echo "zones=$ZONES" >> $GITHUB_OUTPUT
+
   collect-by-country:
+    needs: get-zones
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        zone: [FR, NO, NL]
+        zone: ${{ fromJSON(needs.get-zones.outputs.zones) }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
