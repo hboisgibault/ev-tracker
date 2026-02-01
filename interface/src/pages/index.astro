@@ -169,9 +169,19 @@ const bevSharePrev = getShare(prevYearMonth, ['BEV']);
 const bevGrowth = bevShare - bevSharePrev;
 
 const phevShare = getShare(lastMonth, ['PHEV']);
+const phevSharePrev = getShare(prevYearMonth, ['PHEV']);
+
+const electrifiedShare = bevShare + phevShare;
+const electrifiedSharePrev = bevSharePrev + phevSharePrev;
+const electrifiedGrowth = electrifiedShare - electrifiedSharePrev;
+
 const thermalShare = hasFossilData 
   ? getShare(lastMonth, ['FOSSIL'])
   : getShare(lastMonth, ['DIESEL', 'GASOLINE']);
+const thermalSharePrev = hasFossilData 
+  ? getShare(prevYearMonth, ['FOSSIL'])
+  : getShare(prevYearMonth, ['DIESEL', 'GASOLINE']);
+const thermalGrowth = thermalShare - thermalSharePrev;
 
 // Formatting
 const formatPercent = (n) => n.toFixed(1) + '%';
@@ -231,22 +241,30 @@ const ldJson = {
         <p class="mt-1 text-sm text-gray-400 relative z-10">Fully Electric Vehicles</p>
       </div>
 
-      <!-- PHEV Card -->
-      <div class="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow p-6 border border-gray-100">
-        <h3 class="text-sm font-semibold text-gray-500 uppercase tracking-wider">Electrified (BEV + PHEV)</h3>
-        <div class="mt-4 flex items-baseline">
-          <p class="text-4xl font-extrabold text-blue-900">{formatPercent(bevShare + phevShare)}</p>
+      <!-- Electrified Card -->
+      <div class="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow p-6 border border-gray-100 relative overflow-hidden">
+        <div class="absolute top-0 right-0 w-24 h-24 bg-blue-50 rounded-full -mr-12 -mt-12"></div>
+        <h3 class="text-sm font-semibold text-gray-500 uppercase tracking-wider relative z-10">Electrified (BEV + PHEV)</h3>
+        <div class="mt-4 flex items-baseline relative z-10">
+          <p class="text-4xl font-extrabold text-blue-900">{formatPercent(electrifiedShare)}</p>
+          <span class={`ml-2 text-sm font-medium flex items-center ${electrifiedGrowth === 0 ? 'text-gray-500' : electrifiedGrowth > 0 ? 'text-green-600' : 'text-red-600'}`}>
+            {electrifiedGrowth > 0 ? '↑' : electrifiedGrowth < 0 ? '↓' : '='} {Math.abs(electrifiedGrowth).toFixed(1)} pts YoY
+          </span>
         </div>
-        <p class="mt-1 text-sm text-gray-400">Includes Plug-in Hybrids</p>
+        <p class="mt-1 text-sm text-gray-400 relative z-10">Includes Plug-in Hybrids</p>
       </div>
 
       <!-- Thermal Card -->
-      <div class="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow p-6 border border-gray-100">
-        <h3 class="text-sm font-semibold text-gray-500 uppercase tracking-wider">Pure Thermal</h3>
-        <div class="mt-4 flex items-baseline">
+      <div class="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow p-6 border border-gray-100 relative overflow-hidden">
+        <div class="absolute top-0 right-0 w-24 h-24 bg-gray-50 rounded-full -mr-12 -mt-12"></div>
+        <h3 class="text-sm font-semibold text-gray-500 uppercase tracking-wider relative z-10">Pure Thermal</h3>
+        <div class="mt-4 flex items-baseline relative z-10">
           <p class="text-4xl font-extrabold text-gray-700">{formatPercent(thermalShare)}</p>
+          <span class={`ml-2 text-sm font-medium flex items-center ${thermalGrowth === 0 ? 'text-gray-500' : thermalGrowth > 0 ? 'text-green-600' : 'text-red-600'}`}>
+            {thermalGrowth > 0 ? '↑' : thermalGrowth < 0 ? '↓' : '='} {Math.abs(thermalGrowth).toFixed(1)} pts YoY
+          </span>
         </div>
-        <p class="mt-1 text-sm text-gray-400">Diesel & Gasoline (excl. hybrids)</p>
+        <p class="mt-1 text-sm text-gray-400 relative z-10">Diesel & Gasoline (excl. hybrids)</p>
       </div>
     </div>
 
@@ -274,9 +292,15 @@ const ldJson = {
                 <div class="text-right">
                   <div class="text-3xl font-bold text-gray-900">{formatPercent(item.bevShare)}</div>
                   {item.bevMoM !== null ? (
-                    <div class={`text-sm font-semibold ${item.bevMoM >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                      {item.bevMoM >= 0 ? '↑' : '↓'} {Math.abs(item.bevMoM).toFixed(1)} pts MoM
-                    </div>
+                    Math.abs(item.bevMoM).toFixed(1) === '0.0' ? (
+                      <div class="text-sm font-semibold text-gray-500">
+                        = {Math.abs(item.bevMoM).toFixed(1)} pts MoM
+                      </div>
+                    ) : (
+                      <div class={`text-sm font-semibold ${item.bevMoM > 0 ? 'text-green-600' : 'text-red-600'}`}>
+                        {item.bevMoM > 0 ? '↑' : '↓'} {Math.abs(item.bevMoM).toFixed(1)} pts MoM
+                      </div>
+                    )
                   ) : (
                     <div class="text-sm text-gray-400">No prior month</div>
                   )}

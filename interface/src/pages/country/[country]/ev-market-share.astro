@@ -61,7 +61,19 @@ const bevSharePrev = getShare(prevYearMonth, ['BEV']);
 const bevGrowth = bevShare - bevSharePrev;
 
 const phevShare = getShare(lastMonth, ['PHEV']);
+const phevSharePrev = getShare(prevYearMonth, ['PHEV']);
+
+const electrifiedShare = bevShare + phevShare;
+const electrifiedSharePrev = bevSharePrev + phevSharePrev;
+const electrifiedGrowth = electrifiedShare - electrifiedSharePrev;
+
+const totalGrowth = prevYearMonth.total > 0 
+  ? ((lastMonth.total - prevYearMonth.total) / prevYearMonth.total * 100)
+  : 0;
+
 const thermalShare = hasFossilData ? getShare(lastMonth, ['FOSSIL']) : getShare(lastMonth, ['DIESEL', 'GASOLINE']);
+const thermalSharePrev = hasFossilData ? getShare(prevYearMonth, ['FOSSIL']) : getShare(prevYearMonth, ['DIESEL', 'GASOLINE']);
+const thermalGrowth = thermalShare - thermalSharePrev;
 
 
 
@@ -133,21 +145,30 @@ const bevVol = lastMonth.byEnergy['BEV'] || 0;
         <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
              <dt class="text-xs font-medium text-gray-500 uppercase">BEV Market Share</dt>
              <dd class="mt-1 text-2xl font-semibold text-gray-900">{formatPercent(bevShare)}</dd>
-             <dd class={`text-sm ${bevGrowth >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                {bevGrowth >= 0 ? '+' : ''}{bevGrowth.toFixed(1)}% YoY
+             <dd class={`text-sm ${bevGrowth === 0 ? 'text-gray-500' : bevGrowth > 0 ? 'text-green-600' : 'text-red-600'}`}>
+                {bevGrowth > 0 ? '+' : bevGrowth < 0 ? '' : ''}{bevGrowth.toFixed(1)} pts YoY
              </dd>
         </div>
          <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
-             <dt class="text-xs font-medium text-gray-500 uppercase">PHEV Market Share</dt>
-             <dd class="mt-1 text-2xl font-semibold text-gray-900">{formatPercent(phevShare)}</dd>
+             <dt class="text-xs font-medium text-gray-500 uppercase">Electrified (BEV + PHEV)</dt>
+             <dd class="mt-1 text-2xl font-semibold text-gray-900">{formatPercent(electrifiedShare)}</dd>
+             <dd class={`text-sm ${electrifiedGrowth === 0 ? 'text-gray-500' : electrifiedGrowth > 0 ? 'text-green-600' : 'text-red-600'}`}>
+                {electrifiedGrowth > 0 ? '+' : electrifiedGrowth < 0 ? '' : ''}{electrifiedGrowth.toFixed(1)} pts YoY
+             </dd>
         </div>
         <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
              <dt class="text-xs font-medium text-gray-500 uppercase">Total Registrations</dt>
              <dd class="mt-1 text-2xl font-semibold text-gray-900">{formatNumber(lastMonth.total)}</dd>
+             <dd class={`text-sm ${totalGrowth === 0 ? 'text-gray-500' : totalGrowth > 0 ? 'text-green-600' : 'text-red-600'}`}>
+                {totalGrowth > 0 ? '+' : totalGrowth < 0 ? '' : ''}{totalGrowth.toFixed(1)}% YoY
+             </dd>
         </div>
          <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
              <dt class="text-xs font-medium text-gray-500 uppercase">Thermal Share</dt>
              <dd class="mt-1 text-2xl font-semibold text-gray-500">{formatPercent(thermalShare)}</dd>
+             <dd class={`text-sm ${thermalGrowth === 0 ? 'text-gray-500' : thermalGrowth > 0 ? 'text-green-600' : 'text-red-600'}`}>
+                {thermalGrowth > 0 ? '+' : thermalGrowth < 0 ? '' : ''}{thermalGrowth.toFixed(1)} pts YoY
+             </dd>
         </div>
     </div>
 
