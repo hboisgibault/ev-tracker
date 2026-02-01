@@ -13,9 +13,11 @@
   },
   "dependencies": {
     "adm-zip": "^0.5.16",
+    "canvas": "^3.2.1",
     "csv-parse": "^6.1.0",
     "js-yaml": "^4.1.1",
     "jsdom": "^27.4.0",
+    "pdfjs-dist": "4.9.155",
     "xlsx": "^0.18.5"
   },
   "devDependencies": {

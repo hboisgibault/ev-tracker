@@ -1,28 +1,36 @@
 zones:
-  FR:
-    name: France
-    code: FR
+  AT:
+    name: Austria
+    code: AT
     parsers:
       ev:
-        script: FR
-        function: fetchAllEVData
-        source: "Ministère de la Transition Écologique (statistiques.developpement-durable.gouv.fr)"
-  NO:
-    name: Norway
-    code: NO
+        script: ACEA
+        function: collectAceaDataAT
+        source: "ACEA (European Automobile Manufacturers Association)"
+  BE:
+    name: Belgium
+    code: BE
     parsers:
       ev:
-        script: NO
-        function: fetchAllEVData
-        source: "OFV / SSB (immatriculations)"
-  NL:
-    name: Netherlands
-    code: NL
+        script: ACEA
+        function: collectAceaDataBE
+        source: "ACEA (European Automobile Manufacturers Association)"
+  BG:
+    name: Bulgaria
+    code: BG
     parsers:
       ev:
-        script: NL
-        function: fetchAllEVData
-        source: "RDW / CBS (immatriculations)"
+        script: ACEA
+        function: collectAceaDataBG
+        source: "ACEA (European Automobile Manufacturers Association)"
+  CZ:
+    name: Czech Republic
+    code: CZ
+    parsers:
+      ev:
+        script: ACEA
+        function: collectAceaDataCZ
+        source: "ACEA (European Automobile Manufacturers Association)"
   DE:
     name: Germany
     code: DE
@@ -31,6 +39,142 @@ zones:
         script: DE
         function: fetchAllEVData
         source: "Kraftfahrt-Bundesamt (KBA)"
+  DK:
+    name: Denmark
+    code: DK
+    parsers:
+      ev:
+        script: ACEA
+        function: collectAceaDataDK
+        source: "ACEA (European Automobile Manufacturers Association)"
+  EE:
+    name: Estonia
+    code: EE
+    parsers:
+      ev:
+        script: ACEA
+        function: collectAceaDataEE
+        source: "ACEA (European Automobile Manufacturers Association)"
+  ES:
+    name: Spain
+    code: ES
+    parsers:
+      ev:
+        script: ACEA
+        function: collectAceaDataES
+        source: "ACEA (European Automobile Manufacturers Association)"
+  FI:
+    name: Finland
+    code: FI
+    parsers:
+      ev:
+        script: ACEA
+        function: collectAceaDataFI
+        source: "ACEA (European Automobile Manufacturers Association)"
+  FR:
+    name: France
+    code: FR
+    parsers:
+      ev:
+        script: FR
+        function: fetchAllEVData
+        source: "Ministère de la Transition Écologique (statistiques.developpement-durable.gouv.fr)"
+  GR:
+    name: Greece
+    code: GR
+    parsers:
+      ev:
+        script: ACEA
+        function: collectAceaDataGR
+        source: "ACEA (European Automobile Manufacturers Association)"
+  HR:
+    name: Croatia
+    code: HR
+    parsers:
+      ev:
+        script: ACEA
+        function: collectAceaDataHR
+        source: "ACEA (European Automobile Manufacturers Association)"
+  HU:
+    name: Hungary
+    code: HU
+    parsers:
+      ev:
+        script: ACEA
+        function: collectAceaDataHU
+        source: "ACEA (European Automobile Manufacturers Association)"
+  IE:
+    name: Ireland
+    code: IE
+    parsers:
+      ev:
+        script: ACEA
+        function: collectAceaDataIE
+        source: "ACEA (European Automobile Manufacturers Association)"
+  IT:
+    name: Italy
+    code: IT
+    parsers:
+      ev:
+        script: ACEA
+        function: collectAceaDataIT
+        source: "ACEA (European Automobile Manufacturers Association)"
+  LT:
+    name: Lithuania
+    code: LT
+    parsers:
+      ev:
+        script: ACEA
+        function: collectAceaDataLT
+        source: "ACEA (European Automobile Manufacturers Association)"
+  LV:
+    name: Latvia
+    code: LV
+    parsers:
+      ev:
+        script: ACEA
+        function: collectAceaDataLV
+        source: "ACEA (European Automobile Manufacturers Association)"
+  NL:
+    name: Netherlands
+    code: NL
+    parsers:
+      ev:
+        script: NL
+        function: fetchAllEVData
+        source: "RDW / CBS (immatriculations)"
+  NO:
+    name: Norway
+    code: NO
+    parsers:
+      ev:
+        script: NO
+        function: fetchAllEVData
+        source: "OFV / SSB (immatriculations)"
+  PL:
+    name: Poland
+    code: PL
+    parsers:
+      ev:
+        script: ACEA
+        function: collectAceaDataPL
+        source: "ACEA (European Automobile Manufacturers Association)"
+  PT:
+    name: Portugal
+    code: PT
+    parsers:
+      ev:
+        script: ACEA
+        function: collectAceaDataPT
+        source: "ACEA (European Automobile Manufacturers Association)"
+  RO:
+    name: Romania
+    code: RO
+    parsers:
+      ev:
+        script: ACEA
+        function: collectAceaDataRO
+        source: "ACEA (European Automobile Manufacturers Association)"
   SE:
     name: Sweden
     code: SE
@@ -39,3 +183,19 @@ zones:
         script: SE
         function: fetchAllEVData
         source: "Statistiska centralbyrån (SCB)"
+  SI:
+    name: Slovenia
+    code: SI
+    parsers:
+      ev:
+        script: ACEA
+        function: collectAceaDataSI
+        source: "ACEA (European Automobile Manufacturers Association)"
+  SK:
+    name: Slovakia
+    code: SK
+    parsers:
+      ev:
+        script: ACEA
+        function: collectAceaDataSK
+        source: "ACEA (European Automobile Manufacturers Association)"
