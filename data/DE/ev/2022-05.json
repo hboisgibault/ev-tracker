@@ -1,0 +1,38 @@
+{
+  "year": 2022,
+  "month": 5,
+  "data": [
+    {
+      "marque": "Alle Marken",
+      "modele": "Alle Modelle",
+      "total": 29182,
+      "energie": "BEV"
+    },
+    {
+      "marque": "Alle Marken",
+      "modele": "Alle Modelle",
+      "total": 42000,
+      "energie": "DIESEL"
+    },
+    {
+      "marque": "Alle Marken",
+      "modele": "Alle Modelle",
+      "total": 23209,
+      "energie": "PHEV"
+    },
+    {
+      "marque": "Alle Marken",
+      "modele": "Alle Modelle",
+      "total": 12030,
+      "energie": "HYBRID"
+    },
+    {
+      "marque": "Alle Marken",
+      "modele": "Alle Modelle",
+      "total": 75358,
+      "energie": "GASOLINE"
+    }
+  ],
+  "region": "DE",
+  "type": "all"
+}
