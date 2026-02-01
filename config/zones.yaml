@@ -31,3 +31,11 @@ zones:
         script: DE
         function: fetchAllEVData
         source: "Kraftfahrt-Bundesamt (KBA)"
+  SE:
+    name: Sweden
+    code: SE
+    parsers:
+      ev:
+        script: SE
+        function: fetchAllEVData
+        source: "Statistiska centralbyrån (SCB)"

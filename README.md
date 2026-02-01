@@ -26,6 +26,7 @@ ev-tracker/
 | **NO** | Norway | OFV / SSB |
 | **NL** | Netherlands | RDW / CBS |
 | **DE** | Germany | KBA (Kraftfahrt-Bundesamt) |
+| **SE** | Sweden | SCB (Statistiska centralbyrån) |
 
 *(See `config/zones.yaml` for more details)*
 
