@@ -13,19 +13,15 @@ const FRENCH_FUEL_MAP = {
   GASOLINE: [
     'Essence (thermique)',
     'Essence',
-    'Petrol',
   ],
   HYBRID: [
     'hybride gazole non rechargeable',
-    'Diesel Hybrid',
     'hybride essence non rechargeable',
-    'Petrol Hybrid',
     'gazole (y compris hybrides non rechargeables)',
-    'essence (y compris hybrides non rechargeables)',
+    'essence (y compris hybrides non rechargeables)'
   ],
   PHEV: [
-    'hybride rechargeable',
-    'Plug-in Hybrid',
+    'hybride rechargeable'
   ],
   BEV: [
     'Electrique',
@@ -36,19 +32,18 @@ const FRENCH_FUEL_MAP = {
     'Gaz & ND',
     'LPG',
     'CNG',
-    'Natural Gas',
   ],
 };
 
 function normalizeFrenchFuel(label) {
   if (!label) return 'UNKNOWN';
-  const clean = label.toString().trim().toLowerCase();
+  const clean = label.toString().trim().toLowerCase().replace(/\s+/g, ' ');
   let best = null;
   let bestLen = 0;
 
   for (const [code, aliases] of Object.entries(FRENCH_FUEL_MAP)) {
     for (const alias of aliases) {
-      const aliasClean = alias.toLowerCase();
+      const aliasClean = alias.toLowerCase().replace(/\s+/g, ' ');
       if (clean === aliasClean) return code;
       if (clean.includes(aliasClean) && aliasClean.length > bestLen) {
         best = code;
