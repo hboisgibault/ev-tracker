@@ -1,0 +1,26 @@
+{
+  "year": 2023,
+  "month": 4,
+  "data": [
+    {
+      "marque": "Toutes marques",
+      "modele": "Tous modèles",
+      "total": 7471,
+      "energie": "BEV"
+    },
+    {
+      "marque": "Toutes marques",
+      "modele": "Tous modèles",
+      "total": 343,
+      "energie": "FOSSIL"
+    },
+    {
+      "marque": "Toutes marques",
+      "modele": "Tous modèles",
+      "total": 1163,
+      "energie": "HYBRID"
+    }
+  ],
+  "region": "NO",
+  "type": "all"
+}
