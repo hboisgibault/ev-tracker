@@ -10,11 +10,11 @@ function mapFuelType(brandstof) {
     'Elektriciteit': 'BEV',
     'Benzine': 'GASOLINE',
     'Diesel': 'DIESEL',
-    'LPG': 'LPG_CNG_OTHER',
-    'CNG': 'LPG_CNG_OTHER',
-    'LNG': 'LPG_CNG_OTHER',
-    'Waterstof': 'LPG_CNG_OTHER',
-    'Alcohol': 'LPG_CNG_OTHER'
+    'LPG': 'OTHER',
+    'CNG': 'OTHER',
+    'LNG': 'OTHER',
+    'Waterstof': 'OTHER',
+    'Alcohol': 'OTHER'
   };
   
   return mapping[brandstof] || 'OTHER';

@@ -38,8 +38,8 @@ for (const [code, zone] of availableZones) {
 
 // Define energy categories based on data structure
 const ENERGY_ORDER = hasFossilData 
-  ? ['FOSSIL', 'LPG_CNG_OTHER', 'HYBRID', 'PHEV', 'BEV']
-  : ['DIESEL', 'GASOLINE', 'LPG_CNG_OTHER', 'HYBRID', 'PHEV', 'BEV'];
+  ? ['FOSSIL', 'OTHER', 'HYBRID', 'PHEV', 'BEV']
+  : ['DIESEL', 'GASOLINE', 'OTHER', 'HYBRID', 'PHEV', 'BEV'];
 
 // Helper to normalize energy types based on aggregation mode
 const normalizeEnergy = (energy) => {
@@ -183,6 +183,10 @@ const thermalSharePrev = hasFossilData
   : getShare(prevYearMonth, ['DIESEL', 'GASOLINE']);
 const thermalGrowth = thermalShare - thermalSharePrev;
 
+const totalGrowth = prevYearMonth.total > 0 
+  ? ((lastMonth.total - prevYearMonth.total) / prevYearMonth.total * 100)
+  : 0;
+
 // Formatting
 const formatPercent = (n) => n.toFixed(1) + '%';
 const formatNumber = (n) => new Intl.NumberFormat('en-US').format(n);
@@ -226,7 +230,7 @@ const ldJson = {
     </div>
 
     <!-- KPIs Grid -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
       
       <!-- BEV Card -->
       <div class="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow p-6 border border-gray-100 relative overflow-hidden">
@@ -265,6 +269,19 @@ const ldJson = {
           </span>
         </div>
         <p class="mt-1 text-sm text-gray-400 relative z-10">Diesel & Gasoline (excl. hybrids)</p>
+      </div>
+
+      <!-- Total Registrations Card -->
+      <div class="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow p-6 border border-gray-100 relative overflow-hidden">
+        <div class="absolute top-0 right-0 w-24 h-24 bg-purple-50 rounded-full -mr-12 -mt-12"></div>
+        <h3 class="text-sm font-semibold text-gray-500 uppercase tracking-wider relative z-10">Total Registrations</h3>
+        <div class="mt-4 flex items-baseline relative z-10">
+          <p class="text-4xl font-extrabold text-gray-900">{formatNumber(lastMonth.total)}</p>
+          <span class={`ml-2 text-sm font-medium flex items-center ${totalGrowth === 0 ? 'text-gray-500' : totalGrowth > 0 ? 'text-green-600' : 'text-red-600'}`}>
+            {totalGrowth > 0 ? '↑' : totalGrowth < 0 ? '↓' : '='} {Math.abs(totalGrowth).toFixed(1)}% YoY
+          </span>
+        </div>
+        <p class="mt-1 text-sm text-gray-400 relative z-10">All Powertrains</p>
       </div>
     </div>
 
@@ -320,7 +337,13 @@ const ldJson = {
       </div>
       {monthlyStats.length > 0 ? (
         <div class="w-full">
-          <ModernChart client:only="react" labels={chartLabels} datasets={datasets} />
+          <ModernChart 
+            client:only="react" 
+            labels={chartLabels} 
+            datasets={datasets}
+            monthlyStats={monthlyStatsChart}
+            energyOrder={ENERGY_ORDER}
+          />
         </div>
       ) : (
         <div class="w-full h-[300px] sm:h-[400px] lg:h-[500px] flex items-center justify-center bg-gray-50 rounded-lg">

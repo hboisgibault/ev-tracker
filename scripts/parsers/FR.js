@@ -28,7 +28,7 @@ const FRENCH_FUEL_MAP = {
     'Electric',
     'BEV',
   ],
-  LPG_CNG_OTHER: [
+  OTHER: [
     'Gaz & ND',
     'LPG',
     'CNG',

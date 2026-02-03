@@ -10,7 +10,7 @@ import {
   ResponsiveContainer 
 } from 'recharts';
 
-const CustomTooltip = ({ active, payload, label }) => {
+const CustomTooltip = ({ active, payload, label, viewMode }) => {
   if (active && payload && payload.length) {
     return (
       <div className="bg-white/95 backdrop-blur-sm border border-gray-200 rounded-lg shadow-xl p-4">
@@ -26,7 +26,9 @@ const CustomTooltip = ({ active, payload, label }) => {
                 <span className="text-gray-700">{entry.name}</span>
               </div>
               <span className="font-semibold text-gray-900">
-                {entry.value.toFixed(1)}%
+                {viewMode === 'percentage' 
+                  ? `${entry.value.toFixed(1)}%` 
+                  : new Intl.NumberFormat('en-US').format(Math.round(entry.value))}
               </span>
             </div>
           ))}
@@ -63,9 +65,10 @@ const CustomLegend = ({ payload, toggleSeries, hiddenSeries }) => {
   );
 };
 
-export default function ModernChart({ labels, datasets, title }) {
+export default function ModernChart({ labels, datasets, title, monthlyStats, energyOrder }) {
   const [hiddenSeries, setHiddenSeries] = useState(new Set());
   const [range, setRange] = useState('all'); // all | 24 | 12
+  const [viewMode, setViewMode] = useState('percentage'); // percentage | absolute
   const chartContainerRef = useRef(null);
 
   const sliceCount = range === 'all' ? labels.length : parseInt(range, 10);
@@ -75,16 +78,45 @@ export default function ModernChart({ labels, datasets, title }) {
     data: ds.data.slice(-sliceCount),
   }));
 
-  // Transform data for Recharts format
+  // Transform data for Recharts format based on view mode
   const chartData = useMemo(() => {
-    return slicedLabels.map((label, index) => {
-      const dataPoint = { date: label };
-      slicedDatasets.forEach((dataset) => {
-        dataPoint[dataset.label] = dataset.data[index];
+    if (!monthlyStats || !energyOrder) {
+      // Fallback to legacy mode
+      return slicedLabels.map((label, index) => {
+        const dataPoint = { date: label };
+        slicedDatasets.forEach((dataset) => {
+          dataPoint[dataset.label] = dataset.data[index];
+        });
+        return dataPoint;
+      });
+    }
+
+    // Create a mapping from energy keys to dataset labels
+    // datasets are in reverse order of energyOrder, so we need to match them correctly
+    const energyToLabel = {};
+    const originalOrder = [...slicedDatasets].reverse(); // Reverse back to match energyOrder
+    energyOrder.forEach((energyKey, idx) => {
+      energyToLabel[energyKey] = originalOrder[idx]?.label || energyKey;
+    });
+
+    // Slice monthlyStats based on range
+    const sliceCount = range === 'all' ? monthlyStats.length : parseInt(range, 10);
+    const slicedStats = monthlyStats.slice(-sliceCount);
+
+    return slicedStats.map((stat) => {
+      const dataPoint = { date: stat.date };
+      energyOrder.forEach((energyKey) => {
+        const vol = stat.byEnergy[energyKey] || 0;
+        const label = energyToLabel[energyKey] || energyKey;
+        if (viewMode === 'percentage') {
+          dataPoint[label] = stat.total > 0 ? (vol / stat.total) * 100 : 0;
+        } else {
+          dataPoint[label] = vol;
+        }
       });
       return dataPoint;
     });
-  }, [slicedLabels, slicedDatasets]);
+  }, [slicedLabels, slicedDatasets, monthlyStats, energyOrder, range, viewMode]);
 
   const toggleSeries = (dataKey) => {
     setHiddenSeries(prev => {
@@ -197,6 +229,22 @@ export default function ModernChart({ labels, datasets, title }) {
           Share Chart
         </button>
         <span className="w-px h-4 bg-gray-300"></span>
+        {monthlyStats && energyOrder && (
+          <>
+            <label className="flex items-center gap-2">
+              <span>View:</span>
+              <select
+                value={viewMode}
+                onChange={(e) => setViewMode(e.target.value)}
+                className="border border-gray-200 rounded-md px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-blue-400 bg-white"
+              >
+                <option value="percentage">Percentage</option>
+                <option value="absolute">Absolute</option>
+              </select>
+            </label>
+            <span className="w-px h-4 bg-gray-300"></span>
+          </>
+        )}
         <label className="flex items-center gap-2">
           <span>Range:</span>
           <select
@@ -235,15 +283,15 @@ export default function ModernChart({ labels, datasets, title }) {
               stroke="#9ca3af"
               tick={{ fontSize: 12 }}
               tickLine={false}
-              domain={[0, 100]}
+              domain={viewMode === 'percentage' ? [0, 100] : [0, 'auto']}
               label={{ 
-                value: 'Market Share (%)', 
+                value: viewMode === 'percentage' ? 'Market Share (%)' : 'Registrations', 
                 angle: -90, 
                 position: 'insideLeft',
                 style: { fontSize: 12, fill: '#6b7280' }
               }}
             />
-            <Tooltip content={<CustomTooltip />} />
+            <Tooltip content={<CustomTooltip viewMode={viewMode} />} />
             {datasets.map((dataset, index) => (
               <Area
                 key={index}

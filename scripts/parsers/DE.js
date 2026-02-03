@@ -41,11 +41,11 @@ function mapGermanFuelType(fuelName) {
     'hybrid': 'HYBRID',
     'plug-in-hybrid': 'PHEV',
     'plug-in hybrid': 'PHEV',
-    'erdgas': 'LPG_CNG_OTHER',
-    'cng': 'LPG_CNG_OTHER',
-    'flüssiggas': 'LPG_CNG_OTHER',
-    'lpg': 'LPG_CNG_OTHER',
-    'wasserstoff': 'LPG_CNG_OTHER',
+    'erdgas': 'OTHER',
+    'cng': 'OTHER',
+    'flüssiggas': 'OTHER',
+    'lpg': 'OTHER',
+    'wasserstoff': 'OTHER',
     'sonstige': 'OTHER'
   };
   

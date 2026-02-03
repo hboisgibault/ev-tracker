@@ -11,7 +11,7 @@ const SWEDISH_FUEL_MAP = {
   HYBRID: ['electric hybrid'],
   PHEV: ['plug-in hybrid'],
   BEV: ['electricity'],
-  LPG_CNG_OTHER: ['gas/gas flex', 'ethanol/ethanol flexifuel', 'other fuels'],
+  OTHER: ['gas/gas flex', 'ethanol/ethanol flexifuel', 'other fuels'],
 };
 
 function normalizeSwedishFuel(label) {

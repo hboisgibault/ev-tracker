@@ -25,8 +25,8 @@ const description = `EV market share, BEV/PHEV mix, and trends in ${countryName}
 const { files, hasFossilData, dataDir } = loadCountryData(id);
 
 const ENERGY_ORDER = hasFossilData
-  ? ['FOSSIL', 'LPG_CNG_OTHER', 'HYBRID', 'PHEV', 'BEV']
-  : ['DIESEL', 'GASOLINE', 'LPG_CNG_OTHER', 'HYBRID', 'PHEV', 'BEV'];
+  ? ['FOSSIL', 'OTHER', 'HYBRID', 'PHEV', 'BEV']
+  : ['DIESEL', 'GASOLINE', 'OTHER', 'HYBRID', 'PHEV', 'BEV'];
 
 const monthlyStats = getMonthlyStats({ files, dataDir, hasFossilData });
 
@@ -156,18 +156,18 @@ const bevVol = lastMonth.byEnergy['BEV'] || 0;
                 {electrifiedGrowth > 0 ? '+' : electrifiedGrowth < 0 ? '' : ''}{electrifiedGrowth.toFixed(1)} pts YoY
              </dd>
         </div>
-        <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
-             <dt class="text-xs font-medium text-gray-500 uppercase">Total Registrations</dt>
-             <dd class="mt-1 text-2xl font-semibold text-gray-900">{formatNumber(lastMonth.total)}</dd>
-             <dd class={`text-sm ${totalGrowth === 0 ? 'text-gray-500' : totalGrowth > 0 ? 'text-green-600' : 'text-red-600'}`}>
-                {totalGrowth > 0 ? '+' : totalGrowth < 0 ? '' : ''}{totalGrowth.toFixed(1)}% YoY
-             </dd>
-        </div>
          <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
              <dt class="text-xs font-medium text-gray-500 uppercase">Thermal Share</dt>
              <dd class="mt-1 text-2xl font-semibold text-gray-500">{formatPercent(thermalShare)}</dd>
              <dd class={`text-sm ${thermalGrowth === 0 ? 'text-gray-500' : thermalGrowth > 0 ? 'text-green-600' : 'text-red-600'}`}>
                 {thermalGrowth > 0 ? '+' : thermalGrowth < 0 ? '' : ''}{thermalGrowth.toFixed(1)} pts YoY
+             </dd>
+        </div>
+        <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
+             <dt class="text-xs font-medium text-gray-500 uppercase">Total Registrations</dt>
+             <dd class="mt-1 text-2xl font-semibold text-gray-900">{formatNumber(lastMonth.total)}</dd>
+             <dd class={`text-sm ${totalGrowth === 0 ? 'text-gray-500' : totalGrowth > 0 ? 'text-green-600' : 'text-red-600'}`}>
+                {totalGrowth > 0 ? '+' : totalGrowth < 0 ? '' : ''}{totalGrowth.toFixed(1)}% YoY
              </dd>
         </div>
     </div>
@@ -198,7 +198,14 @@ const bevVol = lastMonth.byEnergy['BEV'] || 0;
       <p class="text-sm text-gray-500 mb-2">Click on legend items to toggle</p>
       <p class="text-xs text-gray-400 mb-4">Source: {source}</p>
       <div class="w-full">
-        <ModernChart client:only="react" labels={chartLabels} datasets={datasets} title={`Market Share History - ${countryName}`} />
+        <ModernChart 
+          client:only="react" 
+          labels={chartLabels} 
+          datasets={datasets} 
+          title={`Market Share History - ${countryName}`}
+          monthlyStats={monthlyStats}
+          energyOrder={ENERGY_ORDER}
+        />
       </div>
     </div>
 
