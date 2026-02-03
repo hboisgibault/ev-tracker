@@ -21,10 +21,18 @@ const zones = loadZones();
                 <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
               </svg>
             </button>
-            <div class="absolute left-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-10">
-              <div class="py-1" role="menu" aria-orientation="vertical" aria-labelledby="options-menu">
+            <div class="absolute left-0 mt-2 w-64 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+              <div class="p-2">
+                <input 
+                  type="text" 
+                  placeholder="Search countries..." 
+                  class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  id="country-search-desktop"
+                />
+              </div>
+              <div class="max-h-80 overflow-y-auto py-1" role="menu" aria-orientation="vertical" aria-labelledby="options-menu" id="country-list-desktop">
                 {zones.map((zone) => (
-                  <a href={`/country/${zone.slug}/ev-market-share`} class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900" role="menuitem">
+                  <a href={`/country/${zone.slug}/ev-market-share`} class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900 country-item" role="menuitem" data-name={zone.name.toLowerCase()}>
                     {zone.name}
                   </a>
                 ))}
@@ -33,7 +41,12 @@ const zones = loadZones();
           </div>
         </nav>
       </div>
-      <div class="hidden sm:ml-6 sm:flex sm:items-center">
+      <div class="flex items-center gap-4">
+        <button id="mobile-menu-button" class="sm:hidden text-gray-700 hover:text-gray-900 p-2">
+          <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+        </button>
         <a href="https://github.com/hboisgibault/ev-tracker" target="_blank" rel="noopener noreferrer" class="text-gray-800 hover:text-black">
           <span class="sr-only">GitHub</span>
           <svg class="h-6 w-6" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
@@ -43,4 +56,77 @@ const zones = loadZones();
       </div>
     </div>
   </div>
+
+  <!-- Mobile Menu -->
+  <div id="mobile-menu" class="hidden sm:hidden border-t border-gray-200 bg-white">
+    <div class="px-4 py-3">
+      <div class="mb-3">
+        <input 
+          type="text" 
+          placeholder="Search countries..." 
+          class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          id="country-search-mobile"
+        />
+      </div>
+      <div class="max-h-96 overflow-y-auto space-y-1" id="country-list-mobile">
+        {zones.map((zone) => (
+          <a href={`/country/${zone.slug}/ev-market-share`} class="block px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900 rounded-md country-item" data-name={zone.name.toLowerCase()}>
+            {zone.name}
+          </a>
+        ))}
+      </div>
+    </div>
+  </div>
 </header>
+
+<script>
+  // Desktop search functionality
+  const searchInputDesktop = document.getElementById('country-search-desktop');
+  const countryListDesktop = document.getElementById('country-list-desktop');
+  
+  if (searchInputDesktop && countryListDesktop) {
+    searchInputDesktop.addEventListener('input', (e) => {
+      const searchTerm = (e.target as HTMLInputElement).value.toLowerCase();
+      const items = countryListDesktop.querySelectorAll('.country-item');
+      
+      items.forEach((item) => {
+        const name = item.getAttribute('data-name') || '';
+        if (name.includes(searchTerm)) {
+          (item as HTMLElement).style.display = 'block';
+        } else {
+          (item as HTMLElement).style.display = 'none';
+        }
+      });
+    });
+  }
+
+  // Mobile search functionality
+  const searchInputMobile = document.getElementById('country-search-mobile');
+  const countryListMobile = document.getElementById('country-list-mobile');
+  
+  if (searchInputMobile && countryListMobile) {
+    searchInputMobile.addEventListener('input', (e) => {
+      const searchTerm = (e.target as HTMLInputElement).value.toLowerCase();
+      const items = countryListMobile.querySelectorAll('.country-item');
+      
+      items.forEach((item) => {
+        const name = item.getAttribute('data-name') || '';
+        if (name.includes(searchTerm)) {
+          (item as HTMLElement).style.display = 'block';
+        } else {
+          (item as HTMLElement).style.display = 'none';
+        }
+      });
+    });
+  }
+
+  // Mobile menu toggle
+  const mobileMenuButton = document.getElementById('mobile-menu-button');
+  const mobileMenu = document.getElementById('mobile-menu');
+  
+  if (mobileMenuButton && mobileMenu) {
+    mobileMenuButton.addEventListener('click', () => {
+      mobileMenu.classList.toggle('hidden');
+    });
+  }
+</script>
