@@ -141,12 +141,15 @@ if (lastChartPoint && lastChartPoint.coverage < 1) {
   monthlyStatsChart.pop();
 }
 
+// Filter to start from 2012
+const monthlyStatsChartFiltered = monthlyStatsChart.filter(s => s.date >= '2012-01');
+
 // Datasets for the chart
-const chartLabels = monthlyStatsChart.map(s => s.date);
+const chartLabels = monthlyStatsChartFiltered.map(s => s.date);
 const datasets = ENERGY_ORDER.map(energyKey => {
   return {
     label: ENERGY_LABELS[energyKey] || energyKey,
-    data: monthlyStatsChart.map(stat => {
+    data: monthlyStatsChartFiltered.map(stat => {
        const vol = stat.byEnergy[energyKey] || 0;
        return stat.total > 0 ? (vol / stat.total * 100) : 0;
     }),
@@ -341,7 +344,7 @@ const ldJson = {
             client:only="react" 
             labels={chartLabels} 
             datasets={datasets}
-            monthlyStats={monthlyStatsChart}
+            monthlyStats={monthlyStatsChartFiltered}
             energyOrder={ENERGY_ORDER}
           />
         </div>
