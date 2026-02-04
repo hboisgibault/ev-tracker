@@ -1,0 +1,42 @@
+{
+  "year": 2024,
+  "month": 2,
+  "data": [
+    {
+      "marque": "Toutes marques",
+      "modele": "Tous modèles",
+      "total": 9385,
+      "energie": "BEV"
+    },
+    {
+      "marque": "Toutes marques",
+      "modele": "Tous modèles",
+      "total": 8385,
+      "energie": "PHEV"
+    },
+    {
+      "marque": "Toutes marques",
+      "modele": "Tous modèles",
+      "total": 4282,
+      "energie": "HYBRID"
+    },
+    {
+      "marque": "Toutes marques",
+      "modele": "Tous modèles",
+      "total": 2338,
+      "energie": "DIESEL"
+    },
+    {
+      "marque": "Toutes marques",
+      "modele": "Tous modèles",
+      "total": 18918,
+      "energie": "GASOLINE"
+    },
+    {
+      "marque": "Toutes marques",
+      "modele": "Tous modèles",
+      "total": 415,
+      "energie": "OTHER"
+    }
+  ]
+}
