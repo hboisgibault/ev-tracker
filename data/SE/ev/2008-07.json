@@ -1,0 +1,26 @@
+{
+  "year": 2008,
+  "month": 7,
+  "data": [
+    {
+      "marque": "Toutes marques",
+      "modele": "Tous modèles",
+      "total": 8504,
+      "energie": "GASOLINE"
+    },
+    {
+      "marque": "Toutes marques",
+      "modele": "Tous modèles",
+      "total": 6673,
+      "energie": "DIESEL"
+    },
+    {
+      "marque": "Toutes marques",
+      "modele": "Tous modèles",
+      "total": 297,
+      "energie": "HYBRID"
+    }
+  ],
+  "region": "SE",
+  "type": "all"
+}
