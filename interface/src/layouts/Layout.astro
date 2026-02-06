@@ -34,7 +34,7 @@ import Footer from '../components/Footer.astro';
 		<meta name="twitter:description" content={metaDescription} />
 		{ogImage && <meta name="twitter:image" content={ogImage} />}
 		{ldJson && (
-			<script type="application/ld+json">{JSON.stringify(ldJson)}</script>
+			<script type="application/ld+json" set:html={JSON.stringify(ldJson)}></script>
 		)}
 	</head>
 	<body class="bg-gray-50 flex flex-col min-h-screen">
