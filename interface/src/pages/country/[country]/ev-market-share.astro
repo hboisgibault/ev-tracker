@@ -93,17 +93,25 @@ const bevVol = lastMonth.byEnergy['BEV'] || 0;
     '@context': 'https://schema.org',
     '@type': 'Dataset',
     name: `EV Market Share in ${countryName}`,
-    description,
+    description: description,
     inLanguage: 'en',
     url: pageUrl,
     publisher: {
       '@type': 'Organization',
       name: 'EV Tracker'
     },
-    isBasedOn: source,
+    isBasedOn: {
+      '@type': 'CreativeWork',
+      name: source,
+      url: 'https://github.com/hboisgibault/ev-tracker'
+    },
     spatialCoverage: {
       '@type': 'Place',
-      name: countryName
+      name: countryName,
+      address: {
+        '@type': 'PostalAddress',
+        addressCountry: id
+      }
     }
   }}
 >
