@@ -155,6 +155,7 @@ function saveMonthlyData(monthCode, fuelData) {
   const output = {
     year: parseInt(year),
     month: parseInt(month),
+    sourceUrl: 'https://opendata.rdw.nl/resource/m9d7-ebf2.json',
     data: formattedData,
     region: 'NL',
     type: 'all'

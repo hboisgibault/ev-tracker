@@ -161,6 +161,7 @@ function saveMonthlyData(monthCode, fuelData) {
   const output = {
     year,
     month,
+    sourceUrl: 'https://data.ssb.no/api/v0/en/table/14020',
     data,
     region: 'NO',
     type: 'all'

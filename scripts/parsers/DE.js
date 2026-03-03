@@ -184,7 +184,7 @@ async function fetchMonthData(year, month) {
       
       if (fuelData && Object.keys(fuelData).length > 0) {
         console.log(`  Success! Found ${Object.keys(fuelData).length} fuel types`);
-        return fuelData;
+        return { fuelData, sourceUrl: url };
       }
     } catch (error) {
       // Try next URL
@@ -199,7 +199,7 @@ async function fetchMonthData(year, month) {
 /**
  * Save monthly data to file
  */
-function saveMonthlyData(year, month, fuelData) {
+function saveMonthlyData(year, month, fuelData, sourceUrl) {
   const monthStr = String(month).padStart(2, '0');
   const outDir = path.join(__dirname, '../../data/DE/ev');
   
@@ -220,6 +220,7 @@ function saveMonthlyData(year, month, fuelData) {
   const output = {
     year,
     month,
+    sourceUrl,
     data,
     region: 'DE',
     type: 'all'
@@ -253,10 +254,10 @@ async function fetchAllEVData() {
   
   for (const monthInfo of missingMonths) {
     try {
-      const fuelData = await fetchMonthData(monthInfo.year, monthInfo.month);
+      const result = await fetchMonthData(monthInfo.year, monthInfo.month);
       
-      if (fuelData && Object.keys(fuelData).length > 0) {
-        saveMonthlyData(monthInfo.year, monthInfo.month, fuelData);
+      if (result && Object.keys(result.fuelData).length > 0) {
+        saveMonthlyData(monthInfo.year, monthInfo.month, result.fuelData, result.sourceUrl);
         successCount++;
       } else {
         errorCount++;

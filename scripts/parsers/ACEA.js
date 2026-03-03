@@ -42,7 +42,7 @@ async function fetchAceaPdf(year, month) {
       console.log(`  Trying: ${url}`);
       const buffer = await fetchFile(url);
       console.log(`  Success!`);
-      return buffer;
+      return { buffer, url };
     } catch (e) {
       // Try next URL pattern
     }
@@ -283,7 +283,7 @@ async function processAceaMonth(year, month, countryCode, outDir) {
   
   try {
     // Fetch PDF
-    const pdfBuffer = await fetchAceaPdf(year, month);
+    const { buffer: pdfBuffer, url: sourceUrl } = await fetchAceaPdf(year, month);
     
     // Parse data for the specified country
     const rawData = await parsePdfData(pdfBuffer, countryCode);
@@ -292,6 +292,7 @@ async function processAceaMonth(year, month, countryCode, outDir) {
     const output = {
       year,
       month,
+      sourceUrl,
       data: rawData.map(item => ({
         marque: 'Toutes marques',
         modele: 'Tous modèles',

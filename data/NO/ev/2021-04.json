@@ -1,6 +1,7 @@
 {
   "year": 2021,
   "month": 4,
+  "sourceUrl": "https://data.ssb.no/api/v0/en/table/14020",
   "data": [
     {
       "marque": "Toutes marques",

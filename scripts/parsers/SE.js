@@ -114,6 +114,7 @@ async function fetchAndProcessCSV() {
       fs.writeFileSync(outPath, JSON.stringify({
         year: parseInt(year, 10),
         month: parseInt(month, 10),
+        sourceUrl: zipUrl,
         data,
         region: 'SE',
         type: 'all'

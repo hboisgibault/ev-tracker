@@ -206,7 +206,7 @@ async function fetchAndProcessExcel() {
         // console.log(`Fichier existant ignoré : ${outPath}`);
         continue;
       }
-      fs.writeFileSync(outPath, JSON.stringify({ year, month, data, region: 'FR', type: 'all' }, null, 2));
+      fs.writeFileSync(outPath, JSON.stringify({ year, month, sourceUrl: xlsxUrl, data, region: 'FR', type: 'all' }, null, 2));
       count++;
     }
   }
