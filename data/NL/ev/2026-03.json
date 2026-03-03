@@ -1,0 +1,14 @@
+{
+  "year": 2026,
+  "month": 3,
+  "data": [
+    {
+      "marque": "ALL",
+      "modele": "ALL",
+      "total": 1,
+      "energie": "BEV"
+    }
+  ],
+  "region": "NL",
+  "type": "all"
+}
