@@ -1,0 +1,39 @@
+{
+  "year": 2026,
+  "month": 2,
+  "sourceUrl": "https://www.kba.de/SharedDocs/Downloads/DE/Statistik/Fahrzeuge/FZ10/fz10_2026_02.xlsx?__blob=publicationFile&v=2",
+  "data": [
+    {
+      "marque": "Alle Marken",
+      "modele": "Alle Modelle",
+      "total": 46275,
+      "energie": "BEV"
+    },
+    {
+      "marque": "Alle Marken",
+      "modele": "Alle Modelle",
+      "total": 31338,
+      "energie": "DIESEL"
+    },
+    {
+      "marque": "Alle Marken",
+      "modele": "Alle Modelle",
+      "total": 24328,
+      "energie": "PHEV"
+    },
+    {
+      "marque": "Alle Marken",
+      "modele": "Alle Modelle",
+      "total": 10658,
+      "energie": "HYBRID"
+    },
+    {
+      "marque": "Alle Marken",
+      "modele": "Alle Modelle",
+      "total": 48811,
+      "energie": "GASOLINE"
+    }
+  ],
+  "region": "DE",
+  "type": "all"
+}
