@@ -1,0 +1,39 @@
+{
+  "year": 2026,
+  "month": 3,
+  "sourceUrl": "https://www.statistiques.developpement-durable.gouv.fr/media/9255/download?inline",
+  "data": [
+    {
+      "marque": "Toutes marques",
+      "modele": "Tous modèles",
+      "total": 4533,
+      "energie": "DIESEL"
+    },
+    {
+      "marque": "Toutes marques",
+      "modele": "Tous modèles",
+      "total": 26213,
+      "energie": "GASOLINE"
+    },
+    {
+      "marque": "Toutes marques",
+      "modele": "Tous modèles",
+      "total": 192756,
+      "energie": "HYBRID"
+    },
+    {
+      "marque": "Toutes marques",
+      "modele": "Tous modèles",
+      "total": 8216,
+      "energie": "PHEV"
+    },
+    {
+      "marque": "Toutes marques",
+      "modele": "Tous modèles",
+      "total": 49735,
+      "energie": "BEV"
+    }
+  ],
+  "region": "FR",
+  "type": "all"
+}
