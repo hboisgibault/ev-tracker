@@ -1,0 +1,33 @@
+{
+  "year": 2026,
+  "month": 5,
+  "sourceUrl": "https://opendata.rdw.nl/resource/m9d7-ebf2.json",
+  "data": [
+    {
+      "marque": "ALL",
+      "modele": "ALL",
+      "total": 905,
+      "energie": "BEV"
+    },
+    {
+      "marque": "ALL",
+      "modele": "ALL",
+      "total": 519,
+      "energie": "GASOLINE"
+    },
+    {
+      "marque": "ALL",
+      "modele": "ALL",
+      "total": 15,
+      "energie": "DIESEL"
+    },
+    {
+      "marque": "ALL",
+      "modele": "ALL",
+      "total": 1,
+      "energie": "OTHER"
+    }
+  ],
+  "region": "NL",
+  "type": "all"
+}
