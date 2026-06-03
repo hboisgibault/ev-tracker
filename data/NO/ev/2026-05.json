@@ -1,0 +1,27 @@
+{
+  "year": 2026,
+  "month": 5,
+  "sourceUrl": "https://data.ssb.no/api/v0/en/table/14020",
+  "data": [
+    {
+      "marque": "Toutes marques",
+      "modele": "Tous modèles",
+      "total": 15022,
+      "energie": "BEV"
+    },
+    {
+      "marque": "Toutes marques",
+      "modele": "Tous modèles",
+      "total": 124,
+      "energie": "FOSSIL"
+    },
+    {
+      "marque": "Toutes marques",
+      "modele": "Tous modèles",
+      "total": 223,
+      "energie": "HYBRID"
+    }
+  ],
+  "region": "NO",
+  "type": "all"
+}
