@@ -1,0 +1,10 @@
+region,fuel,month,"New registered passenger cars, number"
+00 Sweden,electricity,2024M01,1500
+00 Sweden,petrol,2024M01,800
+00 Sweden,plug-in hybrid,2024M01,400
+00 Sweden,electric hybrid,2024M01,600
+00 Sweden,diesel,2024M01,200
+00 Sweden,gas/gas flex,2024M01,50
+01 Stockholm county,electricity,2024M01,9999
+00 Sweden,electricity,2024M02,1600
+00 Sweden,petrol,2024M02,850

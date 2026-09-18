@@ -1,19 +1,19 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import yaml from 'js-yaml';
+import { load as yamlLoad } from 'js-yaml';
 import { slugify } from './slugify.js';
 
 // Load zones configuration
 export function loadZones() {
   const zonesPath = path.join(process.cwd(), '../config/zones.yaml');
   try {
-    const zonesConfig = yaml.load(fs.readFileSync(zonesPath, 'utf-8'));
+    const zonesConfig = yamlLoad(fs.readFileSync(zonesPath, 'utf-8'));
     return Object.entries(zonesConfig.zones).map(([code, zone]) => ({
       ...zone,
       code,
       slug: slugify(zone.name)
     }));
-  } catch (e) {
+  } catch {
     console.error('Error loading zones:', e);
     return [];
   }
@@ -38,7 +38,7 @@ export function loadCountryData(countryCode) {
     let files = [];
     try {
         files = fs.readdirSync(dataDir).filter((f) => f.endsWith('.json')).sort();
-    } catch (e) {
+    } catch {
         return { files: [], hasFossilData: false };
     }
 
@@ -53,7 +53,7 @@ export function loadCountryData(countryCode) {
                break;
             }
         }
-    } catch (e) {
+    } catch {
         // ignore
     }
 

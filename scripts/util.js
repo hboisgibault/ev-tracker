@@ -4,27 +4,34 @@ const path = require('path');
 
 // NOTE: normalizeFuelType removed; country-specific parsers now own their mappings.
 function fetchFile(url, maxRedirects = 5) {
-	return new Promise((resolve, reject) => {
-		function request(currentUrl, redirectsLeft) {
-			const req = https.get(currentUrl, (res) => {
-				if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location && redirectsLeft > 0) {
-                    res.resume(); // Consume response body to free socket
-					const nextUrl = res.headers.location.startsWith('http') ? res.headers.location : new URL(res.headers.location, currentUrl).toString();
-					request(nextUrl, redirectsLeft - 1);
-				} else if (res.statusCode === 200) {
-					const data = [];
-					res.on('data', chunk => data.push(chunk));
-					res.on('end', () => resolve(Buffer.concat(data)));
-				} else {
-                    res.resume(); // Consume response body to free socket
-					reject(new Error('HTTP error: ' + res.statusCode));
-				}
-			});
-            req.on('error', reject);
-            req.end();
-		}
-		request(url, maxRedirects);
-	});
+  return new Promise((resolve, reject) => {
+    function request(currentUrl, redirectsLeft) {
+      const req = https.get(currentUrl, (res) => {
+        if (
+          res.statusCode >= 300 &&
+          res.statusCode < 400 &&
+          res.headers.location &&
+          redirectsLeft > 0
+        ) {
+          res.resume(); // Consume response body to free socket
+          const nextUrl = res.headers.location.startsWith('http')
+            ? res.headers.location
+            : new URL(res.headers.location, currentUrl).toString();
+          request(nextUrl, redirectsLeft - 1);
+        } else if (res.statusCode === 200) {
+          const data = [];
+          res.on('data', (chunk) => data.push(chunk));
+          res.on('end', () => resolve(Buffer.concat(data)));
+        } else {
+          res.resume(); // Consume response body to free socket
+          reject(new Error('HTTP error: ' + res.statusCode));
+        }
+      });
+      req.on('error', reject);
+      req.end();
+    }
+    request(url, maxRedirects);
+  });
 }
 
 function ensureDir(dirPath) {
@@ -50,10 +57,10 @@ function getMonthsSinceStart(startYear = 2019) {
   for (let year = startYear; year <= currentYear; year++) {
     const endMonth = year === currentYear ? currentMonth : 12;
     for (let month = 1; month <= endMonth; month++) {
-      months.push({ 
-        year, 
+      months.push({
+        year,
         month,
-        code: `${year}-${String(month).padStart(2, '0')}`
+        code: `${year}-${String(month).padStart(2, '0')}`,
       });
     }
   }
@@ -70,8 +77,8 @@ function fetchJson(url, options = {}) {
       method,
       headers: {
         'User-Agent': 'EV-Tracker/1.0',
-        ...headers
-      }
+        ...headers,
+      },
     };
 
     if (body) {
@@ -84,9 +91,9 @@ function fetchJson(url, options = {}) {
         res.resume();
         return reject(new Error(`HTTP error: ${res.statusCode}`));
       }
-      
+
       const data = [];
-      res.on('data', chunk => data.push(chunk));
+      res.on('data', (chunk) => data.push(chunk));
       res.on('end', () => {
         try {
           const json = JSON.parse(Buffer.concat(data).toString());

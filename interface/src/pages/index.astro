@@ -4,14 +4,16 @@ import Layout from '../layouts/Layout.astro';
 import ModernChart from '../components/ModernChart.jsx';
 import fs from 'node:fs';
 import path from 'node:path';
-import yaml from 'js-yaml';
+import { load as yamlLoad } from 'js-yaml';
 import { slugify } from '../utils/slugify.js';
 import { ENERGY_COLORS, ENERGY_LABELS } from '../config/energy.js';
 import { SITE_URL, DEFAULT_DESCRIPTION } from '../config/site.js';
+import { normalizeEnergy as normalizeEnergyWithMode, getShare } from '../utils/data.js';
+import { formatPercent, formatNumber } from '../utils/format.js';
 
 // Load available zones from config
 const zonesPath = path.join(process.cwd(), '../config/zones.yaml');
-const zonesConfig = yaml.load(fs.readFileSync(zonesPath, 'utf-8'));
+const zonesConfig = yamlLoad(fs.readFileSync(zonesPath, 'utf-8'));
 const availableZones = Object.entries(zonesConfig.zones);
 
 // --- Data Loading Logic (Aggregate all zones) ---
@@ -41,20 +43,8 @@ const ENERGY_ORDER = hasFossilData
   ? ['FOSSIL', 'OTHER', 'HYBRID', 'PHEV', 'BEV']
   : ['DIESEL', 'GASOLINE', 'OTHER', 'HYBRID', 'PHEV', 'BEV'];
 
-// Helper to normalize energy types based on aggregation mode
-const normalizeEnergy = (energy) => {
-  if (hasFossilData && (energy === 'DIESEL' || energy === 'GASOLINE')) {
-    return 'FOSSIL';
-  }
-  return energy;
-};
-
-const getShare = (stats, keys) => {
-  if (!stats || !stats.total) return 0;
-  let vol = 0;
-  keys.forEach(k => vol += (stats.byEnergy[k] || 0));
-  return (vol / stats.total * 100);
-};
+// Normalisation alignée sur utils/data.js (le mode FOSSIL dépend du périmètre détecté)
+const normalizeEnergy = (energy) => normalizeEnergyWithMode(energy, hasFossilData);
 
 // Load and aggregate data from all zones
 const aggregatedData = {};
@@ -189,10 +179,6 @@ const thermalGrowth = thermalShare - thermalSharePrev;
 const totalGrowth = prevYearMonth.total > 0 
   ? ((lastMonth.total - prevYearMonth.total) / prevYearMonth.total * 100)
   : 0;
-
-// Formatting
-const formatPercent = (n) => n.toFixed(1) + '%';
-const formatNumber = (n) => new Intl.NumberFormat('en-US').format(n);
 
 const leaderboard = countrySummaries
   .filter(c => c.bevShare !== null && c.lastDate)

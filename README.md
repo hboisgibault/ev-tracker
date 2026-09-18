@@ -43,13 +43,13 @@ The collection scripts retrieve historical and recent data to update files in th
 
 ```bash
 # Install dependencies
-npm install
+pnpm install
 
 # Run collection for all configured countries
-npm run collect
+pnpm run collect
 
 # Run collection for a specific country (e.g., France)
-npm run collect FR
+pnpm run collect FR
 ```
 
 Data is saved in JSON format in `data/{COUNTRY_CODE}/ev/{YEAR}-{MONTH}.json`.
@@ -62,10 +62,10 @@ The interface allows you to visualize electric vehicle adoption curves.
 cd interface
 
 # Install interface dependencies
-npm install
+pnpm install
 
 # Start the development server
-npm run dev
+pnpm run dev
 ```
 
 The application will be accessible at `http://localhost:4321`.

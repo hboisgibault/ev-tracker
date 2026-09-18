@@ -3,7 +3,7 @@
   "type": "module",
   "version": "0.0.1",
   "engines": {
-    "node": ">=20"
+    "node": "22"
   },
   "scripts": {
     "dev": "astro dev",
@@ -13,14 +13,14 @@
     "astro": "astro"
   },
   "dependencies": {
-    "@astrojs/react": "^4.4.2",
-    "@astrojs/sitemap": "^3.7.0",
-    "@tailwindcss/postcss": "^4.1.18",
-    "astro": "^5.16.16",
-    "js-yaml": "^4.1.1",
-    "react": "^19.2.4",
-    "react-dom": "^19.2.4",
-    "recharts": "^3.7.0",
-    "tailwindcss": "^4.1.18"
+    "@astrojs/react": "^6.0.6",
+    "@astrojs/sitemap": "^3.7.4",
+    "@tailwindcss/postcss": "^4.3.3",
+    "astro": "^7.3.3",
+    "js-yaml": "^5.4.2",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0",
+    "recharts": "^3.10.1",
+    "tailwindcss": "^4.3.3"
   }
 }

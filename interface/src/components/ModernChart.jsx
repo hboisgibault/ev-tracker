@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useRef } from 'react';
+import { useMemo, useState, useRef } from 'react';
 import { 
   AreaChart, 
   Area, 
@@ -6,7 +6,6 @@ import {
   YAxis, 
   CartesianGrid, 
   Tooltip, 
-  Legend, 
   ResponsiveContainer 
 } from 'recharts';
 
@@ -148,17 +147,6 @@ export default function ModernChart({ labels, datasets, title, monthlyStats, ene
     clonedSvg.setAttribute("width", rect.width);
     clonedSvg.setAttribute("height", rect.height);
     
-        <div className="mt-2 py-2">
-          <CustomLegend 
-            payload={datasets.map((ds, i) => ({
-              dataKey: ds.label,
-              color: ds.borderColor,
-              value: ds.label,
-            }))}
-            toggleSeries={toggleSeries}
-            hiddenSeries={hiddenSeries}
-          />
-        </div>
     // Serialize SVG to XML string
     const serializer = new XMLSerializer();
     let svgStr = serializer.serializeToString(clonedSvg);
@@ -312,7 +300,7 @@ export default function ModernChart({ labels, datasets, title, monthlyStats, ene
 
       <div>
         <CustomLegend 
-          payload={datasets.map((ds, i) => ({
+          payload={datasets.map((ds) => ({
             dataKey: ds.label,
             color: ds.borderColor,
             value: ds.label,

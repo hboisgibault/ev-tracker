@@ -4,7 +4,7 @@ import Layout from '../../../layouts/Layout.astro';
 import ModernChart from '../../../components/ModernChart.jsx';
 import { ENERGY_COLORS, ENERGY_LABELS } from '../../../config/energy.js';
 import { SITE_URL, DEFAULT_DESCRIPTION } from '../../../config/site.js';
-import { loadZones, loadCountryData, getMonthlyStats, getTopModels, getShare } from '../../../utils/data.js';
+import { loadZones, loadCountryData, getMonthlyStats, getShare } from '../../../utils/data.js';
 import { formatPercent, formatNumber } from '../../../utils/format.js';
 
 export function getStaticPaths() {
@@ -29,9 +29,6 @@ const ENERGY_ORDER = hasFossilData
   : ['DIESEL', 'GASOLINE', 'OTHER', 'HYBRID', 'PHEV', 'BEV'];
 
 const monthlyStats = getMonthlyStats({ files, dataDir, hasFossilData });
-
-// Extract Top Models for the latest month
-const topModels = getTopModels({ files, dataDir, hasFossilData });
 
 // Datasets for the chart
 const chartLabels = monthlyStats.map((s) => s.date);

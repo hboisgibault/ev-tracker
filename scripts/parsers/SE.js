@@ -1,6 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const { fetchFile } = require('../util');
+const { validateMonthlyOutput } = require('../schema');
 const { parse } = require('csv-parse/sync');
 const AdmZip = require('adm-zip');
 
@@ -28,33 +29,11 @@ function normalizeSwedishFuel(label) {
   return 'OTHER';
 }
 
-async function fetchAndProcessCSV() {
-  const zipUrl = 'https://www.statistikdatabasen.scb.se/Resources/PX/bulk/ssd/en/TAB3277_en.zip';
-  console.log(`Téléchargement du fichier ZIP : ${zipUrl}`);
-
-  const zipBuffer = await fetchFile(zipUrl);
-  const zip = new AdmZip(zipBuffer);
-  const zipEntries = zip.getEntries();
-
-  let csvEntry = zipEntries.find(e => e.entryName.endsWith('.csv'));
-  if (!csvEntry) {
-    console.error('Aucun fichier CSV trouvé dans l\'archive ZIP.');
-    return;
-  }
-
-  console.log(`Extraction du fichier : ${csvEntry.entryName}`);
-  const csvContent = csvEntry.getData().toString('utf8');
-
-  // Parse CSV
-  const records = parse(csvContent, {
-    columns: true,
-    skip_empty_lines: true,
-    trim: true
-  });
-
-  console.log(`${records.length} lignes trouvées dans le CSV.`);
-
-  // Group data by month
+/**
+ * Group SCB CSV records by month, keeping national data only.
+ * Pure function (no I/O) so it can be unit-tested with a CSV fixture.
+ */
+function groupSwedishRecords(records) {
   const monthlyData = {};
 
   for (const row of records) {
@@ -84,6 +63,38 @@ async function fetchAndProcessCSV() {
     }
   }
 
+  return monthlyData;
+}
+
+async function fetchAndProcessCSV() {
+  const zipUrl = 'https://www.statistikdatabasen.scb.se/Resources/PX/bulk/ssd/en/TAB3277_en.zip';
+  console.log(`Téléchargement du fichier ZIP : ${zipUrl}`);
+
+  const zipBuffer = await fetchFile(zipUrl);
+  const zip = new AdmZip(zipBuffer);
+  const zipEntries = zip.getEntries();
+
+  let csvEntry = zipEntries.find((e) => e.entryName.endsWith('.csv'));
+  if (!csvEntry) {
+    console.error("Aucun fichier CSV trouvé dans l'archive ZIP.");
+    return;
+  }
+
+  console.log(`Extraction du fichier : ${csvEntry.entryName}`);
+  const csvContent = csvEntry.getData().toString('utf8');
+
+  // Parse CSV
+  const records = parse(csvContent, {
+    columns: true,
+    skip_empty_lines: true,
+    trim: true,
+  });
+
+  console.log(`${records.length} lignes trouvées dans le CSV.`);
+
+  // Group data by month
+  const monthlyData = groupSwedishRecords(records);
+
   // Write monthly files
   const outDir = path.join(__dirname, '../../data/SE/ev');
   if (!fs.existsSync(outDir)) fs.mkdirSync(outDir, { recursive: true });
@@ -97,7 +108,7 @@ async function fetchAndProcessCSV() {
           marque: 'Toutes marques',
           modele: 'Tous modèles',
           total,
-          energie: fuelCode
+          energie: fuelCode,
         });
       }
     }
@@ -105,20 +116,22 @@ async function fetchAndProcessCSV() {
     if (data.length > 0) {
       const [year, month] = key.split('-');
       const outPath = path.join(outDir, `${key}.json`);
-      
+
       if (fs.existsSync(outPath)) {
         // Skip existing files
         continue;
       }
 
-      fs.writeFileSync(outPath, JSON.stringify({
+      const output = {
         year: parseInt(year, 10),
         month: parseInt(month, 10),
         sourceUrl: zipUrl,
         data,
         region: 'SE',
-        type: 'all'
-      }, null, 2));
+        type: 'all',
+      };
+      validateMonthlyOutput(output);
+      fs.writeFileSync(outPath, JSON.stringify(output, null, 2));
       count++;
     }
   }
@@ -134,5 +147,7 @@ async function fetchAllEVData() {
 }
 
 module.exports = {
-  fetchAllEVData
+  fetchAllEVData,
+  normalizeSwedishFuel,
+  groupSwedishRecords,
 };
