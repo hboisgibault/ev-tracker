@@ -2,7 +2,7 @@ const fs = require('fs');
 const path = require('path');
 const { fetchFile, ensureDir, filterMissingMonths, getMonthsSinceStart } = require('../util');
 const { validateMonthlyOutput } = require('../schema');
-const xlsx = require('xlsx');
+const xlsx = require('@e965/xlsx');
 
 /**
  * Try multiple KBA file URL patterns

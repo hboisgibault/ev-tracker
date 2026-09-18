@@ -3,7 +3,7 @@ const path = require('path');
 const { fetchFile } = require('../util');
 const { validateMonthlyOutput } = require('../schema');
 const { JSDOM } = require('jsdom');
-const xlsx = require('xlsx');
+const xlsx = require('@e965/xlsx');
 
 // Local fuel mapping for France; was previously in config/fuel_mapping.yaml
 const FRENCH_FUEL_MAP = {

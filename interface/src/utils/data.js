@@ -1,13 +1,13 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import yaml from 'js-yaml';
+import { load as yamlLoad } from 'js-yaml';
 import { slugify } from './slugify.js';
 
 // Load zones configuration
 export function loadZones() {
   const zonesPath = path.join(process.cwd(), '../config/zones.yaml');
   try {
-    const zonesConfig = yaml.load(fs.readFileSync(zonesPath, 'utf-8'));
+    const zonesConfig = yamlLoad(fs.readFileSync(zonesPath, 'utf-8'));
     return Object.entries(zonesConfig.zones).map(([code, zone]) => ({
       ...zone,
       code,

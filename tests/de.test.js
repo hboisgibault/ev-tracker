@@ -22,7 +22,7 @@ describe('KBA Excel parsing', () => {
   });
 
   it('returns null when the total row is missing', () => {
-    const xlsx = require('xlsx');
+    const xlsx = require('@e965/xlsx');
     const wb = xlsx.utils.book_new();
     wb.SheetNames.push('FZ10.1');
     wb.Sheets['FZ10.1'] = xlsx.utils.aoa_to_sheet([['Insgesamt', 'mit Dieselantrieb']]);

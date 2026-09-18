@@ -9,7 +9,7 @@ const {
   findFrenchHeader,
   aggregateFrenchRow,
 } = require('../scripts/parsers/FR.js');
-const xlsx = require('xlsx');
+const xlsx = require('@e965/xlsx');
 
 const fixturesDir = join(dirname(fileURLToPath(import.meta.url)), 'fixtures');
 

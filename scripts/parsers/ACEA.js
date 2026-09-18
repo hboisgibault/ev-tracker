@@ -2,7 +2,7 @@ const fs = require('fs');
 const path = require('path');
 const { fetchFile, ensureDir, getMonthsSinceStart, filterMissingMonths } = require('../util');
 const { validateMonthlyOutput } = require('../schema');
-const pdfjsLib = require('pdfjs-dist');
+// pdfjs-dist v6+ est ESM pur (main: build/pdf.mjs) : import dynamique obligatoire depuis CJS.
 
 // Plausibility floor for one country's monthly total across all fuels.
 // Legit ACEA months are >= ~1000 (EE/LV); the mid-2025 mis-parses (ES/IT)
@@ -79,7 +79,8 @@ async function fetchAceaPdf(year, month) {
  */
 async function parsePdfData(pdfBuffer, countryCode) {
   try {
-    // Parse PDF using pdfjs-dist
+    // Parse PDF using pdfjs-dist (import dynamique : v6 ESM pur, build legacy requis en Node)
+    const pdfjsLib = await import('pdfjs-dist/legacy/build/pdf.mjs');
     const loadingTask = pdfjsLib.getDocument({
       data: new Uint8Array(pdfBuffer),
       verbosity: 0, // Suppress warnings
