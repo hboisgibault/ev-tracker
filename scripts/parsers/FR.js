@@ -6,15 +6,16 @@ const { JSDOM } = require('jsdom');
 const xlsx = require('@e965/xlsx');
 
 // Local fuel mapping for France; was previously in config/fuel_mapping.yaml
+// WARNING: the SDES workbook also holds "gazole/essence (y compris hybrides
+// non rechargeables)" columns, but those are REDUNDANT totals
+// (base + pure hybrids, e.g. 133299 + 12 = 133311 in 2011_01). Mapping them
+// double-counts the whole market (proven 2026-09-18: 188/188 rows satisfy
+// Total = base + pure hybrids + PHEV + BEV + Gaz&ND). They must stay
+// unmapped so findFrenchHeader ignores them.
 const FRENCH_FUEL_MAP = {
   DIESEL: ['Gazole (thermique)', 'Diesel'],
   GASOLINE: ['Essence (thermique)', 'Essence'],
-  HYBRID: [
-    'hybride gazole non rechargeable',
-    'hybride essence non rechargeable',
-    'gazole (y compris hybrides non rechargeables)',
-    'essence (y compris hybrides non rechargeables)',
-  ],
+  HYBRID: ['hybride gazole non rechargeable', 'hybride essence non rechargeable'],
   PHEV: ['hybride rechargeable'],
   BEV: ['Electrique', 'Electric', 'BEV'],
   OTHER: ['Gaz & ND', 'LPG', 'CNG'],
@@ -23,6 +24,11 @@ const FRENCH_FUEL_MAP = {
 function normalizeFrenchFuel(label) {
   if (!label) return 'UNKNOWN';
   const clean = label.toString().trim().toLowerCase().replace(/\s+/g, ' ');
+  // Inclusive totals ("essence/gazole (y compris ...)") sum base fuel +
+  // hybrids: they must never match a pure-fuel alias by substring
+  // ("essence" ⊂ "essence (y compris ...)"), otherwise the whole market is
+  // double-counted. They are redundant with the Total column: ignore them.
+  if (/y compris/i.test(clean)) return 'UNKNOWN';
   let best = null;
   let bestLen = 0;
 
@@ -36,7 +42,11 @@ function normalizeFrenchFuel(label) {
       }
     }
   }
-  return best || 'OTHER';
+  // Unknown headers (e.g. "Mois", "Total") must NOT fall back to OTHER:
+  // OTHER is a real fuel bucket (Gaz & ND) and an unknown column mapped to
+  // OTHER would inject foreign volumes into it. UNKNOWN columns are ignored
+  // by findFrenchHeader.
+  return best || 'UNKNOWN';
 }
 
 /**
@@ -63,13 +73,18 @@ function findFrenchHeader(rows) {
 
     if (hasFuelRef) {
       headerIndex = i;
-      // Identifier les colonnes
+      // Identifier les colonnes. OTHER est inclus (ex. Gaz & ND) : seul
+      // UNKNOWN est exclu, sinon des volumes réels seraient perdus.
       for (let j = 0; j < row.length; j++) {
         const val = row[j];
         if (typeof val === 'string') {
+          // Skip the redundant grand-total column: it has no fuel alias and
+          // would otherwise fall back to OTHER, adding the total on top of
+          // the parts it already sums.
+          if (/^\s*total\s*$/i.test(val)) continue;
           // Normalize column header
           const fuelCode = normalizeFrenchFuel(val);
-          if (fuelCode !== 'OTHER' && fuelCode !== 'UNKNOWN') {
+          if (fuelCode !== 'UNKNOWN') {
             colMapping[j] = fuelCode;
           }
         }
@@ -88,15 +103,16 @@ function findFrenchHeader(rows) {
 
 /**
  * Aggregate one workbook row into normalized fuel totals.
+ * Genuine zeroes are written explicitly (like ACEA files) so series stay
+ * homogeneous: a missing energy always means "unmapped column", never
+ * "zero silently dropped".
  * Pure function (no I/O).
  */
 function aggregateFrenchRow(row, colMapping) {
   const aggregated = {};
   for (const [colIdx, fuelCode] of Object.entries(colMapping)) {
     const val = parseInt(row[colIdx], 10) || 0;
-    if (val > 0) {
-      aggregated[fuelCode] = (aggregated[fuelCode] || 0) + val;
-    }
+    aggregated[fuelCode] = (aggregated[fuelCode] || 0) + val;
   }
   return aggregated;
 }

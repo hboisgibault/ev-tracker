@@ -29,7 +29,9 @@ const MonthlyOutput = z
   .object({
     year: z.number().int().min(1990).max(2100),
     month: z.number().int().min(1).max(12),
-    sourceUrl: z.string().min(1),
+    // Optional: legacy files (pre-validation) carry no sourceUrl, and some
+    // parsers aggregate sources. Parsers that know their source still write it.
+    sourceUrl: z.string().min(1).optional(),
     data: z.array(DataRow).min(1),
     region: z.string().optional(),
     type: z.string().optional(),

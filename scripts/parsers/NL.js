@@ -205,7 +205,15 @@ function saveMonthlyData(monthCode, fuelData) {
 async function fetchAllEVData() {
   const allMonths = getMonthsSinceStart(2019);
   const outputDir = path.join(process.cwd(), 'data/NL/ev');
-  const missingMonths = filterMissingMonths(allMonths, outputDir, (m) => `${m.code}.json`);
+  let missingMonths = filterMissingMonths(allMonths, outputDir, (m) => `${m.code}.json`);
+
+  // The RDW registry is real-time: the current month is always a partial
+  // month (cf. 2026-09 persisted with 14.5k on Sep 19 for ~28k expected).
+  // Never persist it — it will be fetched complete once the month is over.
+  // (ACEA/SSB/KBA sources publish complete months only and need no filter.)
+  const now = new Date();
+  const currentCode = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+  missingMonths = missingMonths.filter((m) => m.code !== currentCode);
 
   console.log(`Total months in range: ${allMonths.length}`);
   console.log(`Missing months to fetch: ${missingMonths.length}`);

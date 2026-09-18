@@ -44,8 +44,12 @@ describe('monthly output schema', () => {
     expect(() => validateMonthlyOutput(zeroSum)).toThrow();
   });
 
-  it('rejects missing sourceUrl', () => {
-    const { sourceUrl, ...bad } = validOutput;
-    expect(() => validateMonthlyOutput(bad)).toThrow();
+  it('accepts a missing sourceUrl (legacy files predate validation)', () => {
+    const { sourceUrl, ...legacy } = validOutput;
+    expect(() => validateMonthlyOutput(legacy)).not.toThrow();
+  });
+
+  it('still rejects an empty sourceUrl when present', () => {
+    expect(() => validateMonthlyOutput({ ...validOutput, sourceUrl: '' })).toThrow();
   });
 });

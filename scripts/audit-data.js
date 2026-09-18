@@ -33,6 +33,25 @@ const zones = fs
   .readdirSync(dataDir)
   .filter((d) => fs.statSync(path.join(dataDir, d)).isDirectory());
 
+// First pass: per-country energy frequencies, to spot isolated absences
+// (e.g. DE HYBRID missing 2021-08..12 while present in 92% of DE files).
+const energyFreq = {};
+for (const zone of zones) {
+  const evDir = path.join(dataDir, zone, 'ev');
+  if (!fs.existsSync(evDir)) continue;
+  const files = fs.readdirSync(evDir).filter((f) => f.endsWith('.json'));
+  const freq = {};
+  for (const file of files) {
+    try {
+      const content = JSON.parse(fs.readFileSync(path.join(evDir, file), 'utf8'));
+      for (const row of content.data || []) freq[row.energie] = (freq[row.energie] || 0) + 1;
+    } catch {
+      // Invalid JSON is reported in the main pass.
+    }
+  }
+  energyFreq[zone] = { freq, n: files.length };
+}
+
 for (const zone of zones.sort()) {
   const evDir = path.join(dataDir, zone, 'ev');
   if (!fs.existsSync(evDir)) {
@@ -90,7 +109,14 @@ for (const zone of zones.sort()) {
       warnings.push(
         `${zone}/${file}: PHEV xor HYBRID == 0 (PHEV=${byEnergy.PHEV}, HYBRID=${byEnergy.HYBRID})`
       );
-    if (!content.sourceUrl) warnings.push(`${zone}/${file}: missing sourceUrl`);
+    // Energy structurally present in this country (>=90% of files) but
+    // absent here: probable extraction gap, not a genuine zero (zeroes are
+    // written explicitly, e.g. RO/LV HYBRID=0 post-fix).
+    const { freq, n } = energyFreq[zone];
+    for (const [energie, count] of Object.entries(freq)) {
+      if (count / n >= 0.9 && !(energie in byEnergy))
+        warnings.push(`${zone}/${file}: missing ${energie} (present in ${count}/${n} files)`);
+    }
     if (prevCode !== null && prevTotal > 0 && (total < prevTotal * 0.3 || total > prevTotal * 3))
       warnings.push(`${zone}/${file}: rupture ${prevCode} ${prevTotal} -> ${code} ${total}`);
     prevCode = code;
