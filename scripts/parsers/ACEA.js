@@ -125,6 +125,36 @@ function rowNumbersFromItems(rowItems, countryVariations) {
 }
 
 /**
+ * Tell a monthly data-table row apart from press-release prose.
+ * Pure function (no I/O) so the discrimination can be unit-tested.
+ *
+ * Proven 2026-09-18 (April 2024 PDF): the sentence "...major markets:
+ * Spain (+23.1%)..." matched "Spain" with 4 stray numbers (91, 3, 9, 95),
+ * aborting the ES recollect. A real data row never carries prose markers
+ * ('(', ')', '%') and holds 12-14 numeric items, so prose rows are rejected
+ * and the numeric bar is set well above sentence fragments.
+ *
+ * @param {Array<{text: string}>} items - left-to-right row items.
+ * @param {Array<string>} countryVariations - country name variants.
+ * @returns {boolean} true when the row looks like a monthly data row.
+ */
+function isMonthlyDataRow(items, countryVariations) {
+  const rowText = items.map((i) => i.text).join(' ');
+  const mentionsCountry = countryVariations.some((name) => rowText.includes(name));
+  if (!mentionsCountry) return false;
+  // Press prose carries percentages / parenthesized variations; data rows
+  // show bare values (change columns render as "-16.3", never "(...)").
+  if (items.some((item) => /[()%]/.test(item.text))) return false;
+  const numbersWithoutSign = items.filter((item) => {
+    const text = item.text;
+    if (text.includes('+') || text.includes('-') || text.includes('%')) return false;
+    const num = parseInt(text.replace(/,/g, ''), 10);
+    return !isNaN(num) && num >= 0;
+  });
+  return numbersWithoutSign.length >= 8;
+}
+
+/**
  * Parse PDF and extract registration data using coordinate-based extraction
  * Extracts the table with country-level registration data by fuel type
  *
@@ -200,34 +230,23 @@ async function parsePdfData(pdfBuffer, countryCode) {
         });
       }
 
-      // Find the row containing the country name
+      // Find the row containing the country name (data table, not prose)
       for (const [y, items] of rowMap) {
         // Sort items by x-coordinate (left to right)
         items.sort((a, b) => a.x - b.x);
 
-        const rowText = items.map((i) => i.text).join(' ');
-
-        // Check if this row contains the country name
-        for (const name of countryVariations) {
-          if (rowText.includes(name)) {
-            // Verify this is a data row by checking if it has at least 4 numbers without +/-
-            const numbersWithoutSign = items.filter((item) => {
-              const text = item.text;
-              if (text.includes('+') || text.includes('-') || text.includes('%')) return false;
-              const num = parseInt(text.replace(/,/g, ''), 10);
-              return !isNaN(num) && num >= 0;
-            });
-
-            if (numbersWithoutSign.length >= 4) {
-              console.log(`  Found ${name} in row at y=${y}`);
-              console.log(`  Row items: ${items.map((i) => i.text).join(' | ')}`);
-              countryRow = items;
-              break;
-            }
-          }
+        if (isMonthlyDataRow(items, countryVariations)) {
+          const name = countryVariations.find((n) =>
+            items
+              .map((i) => i.text)
+              .join(' ')
+              .includes(n)
+          );
+          console.log(`  Found ${name} in row at y=${y}`);
+          console.log(`  Row items: ${items.map((i) => i.text).join(' | ')}`);
+          countryRow = items;
+          break;
         }
-
-        if (countryRow) break;
       }
 
       if (countryRow) break;
@@ -400,6 +419,7 @@ async function collectAceaData(countryCode = 'FR', startYear = 2024) {
 module.exports = {
   collectAceaData,
   rowNumbersFromItems,
+  isMonthlyDataRow,
   parsePdfData,
   getAceaPdfUrls,
   assertPlausibleAceaData,

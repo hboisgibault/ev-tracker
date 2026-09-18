@@ -8,6 +8,7 @@ const require = createRequire(import.meta.url);
 const {
   parsePdfData,
   rowNumbersFromItems,
+  isMonthlyDataRow,
   YTD_ONLY_RELEASES,
   getAceaPdfUrls,
   assertPlausibleAceaData,
@@ -110,6 +111,45 @@ describe('ACEA dash handling (positional sentinels)', () => {
       { text: 'France 2500', x: 6 },
     ];
     expect(rowNumbersFromItems(items, ['Spain', 'France'])).toEqual([3375, 3012, 4578, 4102, 2500]);
+  });
+});
+
+describe('ACEA data-row discrimination (prose vs table)', () => {
+  it('rejects the press-prose false match from the April 2024 PDF', () => {
+    // Exact items that aborted the ES recollect: sentence fragment with
+    // 4 stray numbers, matched "Spain" under the old >= 4 rule.
+    const prose = [
+      { text: '91', x: 0 },
+      { text: '3', x: 1 },
+      { text: ',9', x: 2 },
+      { text: '95', x: 3 },
+      {
+        text: 'units, driven by strong increases across all major markets: Spain (+23.1%),',
+        x: 4,
+      },
+    ];
+    expect(isMonthlyDataRow(prose, ['Spain', 'SPAIN'])).toBe(false);
+  });
+
+  it('accepts a genuine 14-number data row', () => {
+    const row = [
+      { text: 'Spain', x: 0 },
+      { text: '3375', x: 1 },
+      { text: '3012', x: 2 },
+      { text: '4578', x: 3 },
+      { text: '4102', x: 4 },
+      { text: '26451', x: 5 },
+      { text: '25010', x: 6 },
+      { text: '2762', x: 7 },
+      { text: '2544', x: 8 },
+      { text: '23966', x: 9 },
+      { text: '23120', x: 10 },
+      { text: '7553', x: 11 },
+      { text: '7010', x: 12 },
+      { text: '68685', x: 13 },
+      { text: '65432', x: 14 },
+    ];
+    expect(isMonthlyDataRow(row, ['Spain', 'SPAIN'])).toBe(true);
   });
 });
 
