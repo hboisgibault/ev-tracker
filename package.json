@@ -8,6 +8,7 @@
   },
   "scripts": {
     "collect": "node scripts/collect.js",
+    "audit": "node scripts/audit-data.js",
     "lint": "eslint .",
     "format": "prettier --write .",
     "format:check": "prettier --check scripts tests",

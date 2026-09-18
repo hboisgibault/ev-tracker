@@ -7,6 +7,8 @@ import { createRequire } from 'node:module';
 const require = createRequire(import.meta.url);
 const {
   parsePdfData,
+  rowNumbersFromItems,
+  YTD_ONLY_RELEASES,
   getAceaPdfUrls,
   assertPlausibleAceaData,
 } = require('../scripts/parsers/ACEA.js');
@@ -48,6 +50,66 @@ describe('ACEA PDF extraction', () => {
     const urls = getAceaPdfUrls(2025, 1);
     expect(urls.some((u) => u.includes('January_2025'))).toBe(true);
     expect(getAceaPdfUrls(2024, 1).some((u) => u.includes('January_2024'))).toBe(true);
+  });
+
+  it('marks the February 2025 YTD-only release as skipped (no monthly table)', () => {
+    // Proven 2026-09-18: the Feb 2025 PDF holds Jan-Feb cumulative blocks,
+    // so 2025-02 must never abort a country recollect loop.
+    expect(YTD_ONLY_RELEASES.has('2025-02')).toBe(true);
+  });
+});
+
+describe('ACEA dash handling (positional sentinels)', () => {
+  // Exact Romania row shape from the January 2026 PDF (p3 y=213):
+  // PHEV is a dash (ꟷ U+A7F7) while HEV holds 4642. Dropping the dashes
+  // used to shift HEV into the PHEV slot (PHEV=4642, HYBRID=0).
+  const romaniaItems = [
+    { text: 'Romania', x: 0 },
+    { text: '974', x: 1 },
+    { text: '1,164', x: 2 },
+    { text: '-16.3', x: 3 },
+    { text: 'ꟷ', x: 4 },
+    { text: 'ꟷ', x: 5 },
+    { text: '4,642', x: 6 },
+    { text: '5,284', x: 7 },
+    { text: '-12.1', x: 8 },
+    { text: '489', x: 9 },
+    { text: '1,511', x: 10 },
+    { text: '-67.6', x: 11 },
+    { text: '1,280', x: 12 },
+    { text: '3,002', x: 13 },
+    { text: '-57.4', x: 14 },
+    { text: '542', x: 15 },
+    { text: '959', x: 16 },
+    { text: '-43.5', x: 17 },
+    { text: '7,927', x: 18 },
+    { text: '11,920', x: 19 },
+    { text: '-33.5', x: 20 },
+  ];
+
+  it('keeps dash positions as 0 instead of shifting columns', () => {
+    expect(rowNumbersFromItems(romaniaItems, ['Romania'])).toEqual([
+      974, 1164, 0, 0, 4642, 5284, 489, 1511, 1280, 3002, 542, 959, 7927, 11920,
+    ]);
+  });
+
+  it('maps a dashed-PHEV row to PHEV=0 and HYBRID=4642, not the reverse', () => {
+    const numbers = rowNumbersFromItems(romaniaItems, ['Romania']);
+    expect(numbers.length).toBeGreaterThanOrEqual(14);
+    expect({ phev: numbers[2], hybrid: numbers[4] }).toEqual({ phev: 0, hybrid: 4642 });
+  });
+
+  it('leaves a complete row untouched (no spurious zeros)', () => {
+    const items = [
+      { text: 'Spain', x: 0 },
+      { text: '3375', x: 1 },
+      { text: '3012', x: 2 },
+      { text: '+11.0', x: 3 },
+      { text: '4578', x: 4 },
+      { text: '4102', x: 5 },
+      { text: 'France 2500', x: 6 },
+    ];
+    expect(rowNumbersFromItems(items, ['Spain', 'France'])).toEqual([3375, 3012, 4578, 4102, 2500]);
   });
 });
 

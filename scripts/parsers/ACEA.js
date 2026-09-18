@@ -9,6 +9,13 @@ const { validateMonthlyOutput } = require('../schema');
 // produced sums of 9-49. Anything below this is a broken extraction.
 const MIN_MONTHLY_TOTAL = 200;
 
+// ACEA releases with no monthly country x fuel table (cumulative Jan-Feb
+// YTD only). Proven 2026-09-18: the February 2025 PDF holds YTD blocks per
+// fuel plus a by-manufacturer table, so February 2025 cannot be extracted
+// month by month. These months are skipped explicitly so one known gap does
+// not abort the whole country loop (parse failures still throw elsewhere).
+const YTD_ONLY_RELEASES = new Set(['2025-02']);
+
 /**
  * ACEA (European Automobile Manufacturers Association) publishes monthly car registration data
  * in PDF format with different URL patterns.
@@ -67,6 +74,54 @@ async function fetchAceaPdf(year, month) {
   }
 
   throw new Error(`Unable to fetch ACEA PDF for ${year}-${String(month).padStart(2, '0')}`);
+}
+
+/**
+ * Extract positioned numbers from a country row's text items.
+ * Pure function (no I/O) so the dash handling can be unit-tested.
+ *
+ * ACEA uses dashes (–, —, ꟷ, ...) for missing values in ANY fuel column
+ * (e.g. Romania PHEV is a dash in 2026-01 while HEV holds 4642). Dropping
+ * those items shifts every column behind them and swaps fuels (the RO/LV
+ * PHEV<->HYBRID corruption). Dash-only tokens are therefore kept as 0
+ * sentinels so fuel-column positions never move.
+ *
+ * @param {Array<{text: string}>} rowItems - left-to-right row items.
+ * @param {Array<string>} countryVariations - country name variants to strip.
+ * @returns {Array<number>} positioned numbers (percentages excluded).
+ */
+function rowNumbersFromItems(rowItems, countryVariations) {
+  const numbers = [];
+
+  for (const item of rowItems) {
+    let text = item.text;
+
+    // Skip percentage signs and text with +/- (percentages)
+    if (text.includes('%') || text.includes('+') || text.includes('-')) continue;
+
+    // Strip the country name: pdfjs sometimes fuses it with the first
+    // number in a single item (e.g. "France 2500").
+    for (const name of countryVariations) {
+      text = text.split(name).join(' ');
+    }
+
+    // One item can hold several numbers when fused; parse token by token.
+    for (const token of text.split(/\s+/)) {
+      if (!token) continue;
+      // Dash-only token = ACEA missing value: keep the position with a 0.
+      // Also covers hyphen-minus so a fused "-"/"–" never shifts columns.
+      if (/^[–—−‐‑‒―⁃ꟷ-]+$/.test(token)) {
+        numbers.push(0);
+        continue;
+      }
+      const num = parseInt(token.replace(/,/g, ''), 10);
+      if (!isNaN(num) && num >= 0) {
+        numbers.push(num);
+      }
+    }
+  }
+
+  return numbers;
 }
 
 /**
@@ -182,35 +237,8 @@ async function parsePdfData(pdfBuffer, countryCode) {
       throw new Error(`Country ${countryCode} not found in PDF`);
     }
 
-    // Extract numbers from the row (skip the country name)
-    // Filter to get only numbers (no percentages which contain + or - or decimals in display)
-    const numbers = [];
-
-    for (const item of countryRow) {
-      let text = item.text;
-
-      // Skip percentage signs and text with +/- (percentages)
-      if (text.includes('%') || text.includes('+') || text.includes('-')) continue;
-
-      // Skip dash characters used for missing data (en-dash U+2013, em-dash U+2014, etc.)
-      // Also skip special Unicode dashes like ꟷ (U+A7F7)
-      if (/^[–—−‐‑‒―⁃ꟷ]+$/.test(text)) continue;
-
-      // Strip the country name: pdfjs sometimes fuses it with the first
-      // number in a single item (e.g. "France 2500").
-      for (const name of countryVariations) {
-        text = text.split(name).join(' ');
-      }
-
-      // One item can hold several numbers when fused; parse token by token.
-      for (const token of text.split(/\s+/)) {
-        if (!token) continue;
-        const num = parseInt(token.replace(/,/g, ''), 10);
-        if (!isNaN(num) && num >= 0) {
-          numbers.push(num);
-        }
-      }
-    }
+    // Extract positioned numbers from the row (dashes kept as 0 sentinels).
+    const numbers = rowNumbersFromItems(countryRow, countryVariations);
 
     console.log(`  Extracted numbers from row: ${numbers.join(', ')}`);
 
@@ -223,13 +251,14 @@ async function parsePdfData(pdfBuffer, countryCode) {
     // ACEA table format (columns from left to right):
     // BEV_current | BEV_prev | PHEV_current | PHEV_prev | HEV_current | HEV_prev |
     // Others_current | Others_prev | Petrol_current | Petrol_prev | Diesel_current | Diesel_prev | Total_current | Total_prev
-    // We extract current values at positions: 0, 2, 4, 6, 8, 10
-    // Note: When HYBRID has dashes (–), they're filtered out, so we need to handle missing values
+    // We extract current values at positions: 0, 2, 4, 6, 8, 10.
+    // Missing values are dash sentinels (0) at their own position, so the
+    // normal indexing below holds whatever the column layout is.
 
     const result = [];
 
-    // For May 2025+, ACEA uses dashes for missing hybrid data
-    // Check if we have the expected number of values (14 with all data, 12 if hybrid is missing)
+    // Legacy fallback: rows shorter than 14 numbers predate dash sentinels;
+    // assume the missing column is HEV (historical ACEA layout change).
     const hasHybridData = numbers.length >= 14;
 
     let bev, phev, hybrid, other, gasoline, diesel;
@@ -288,6 +317,10 @@ function assertPlausibleAceaData(rawData, countryCode) {
  */
 async function processAceaMonth(year, month, countryCode, outDir) {
   const monthCode = `${year}-${String(month).padStart(2, '0')}`;
+  if (YTD_ONLY_RELEASES.has(monthCode)) {
+    console.warn(`  Skipping ${monthCode}: known YTD-only ACEA release (no monthly table)`);
+    return 'skipped';
+  }
   console.log(`Processing ACEA data for ${countryCode}: ${monthCode}`);
 
   let pdfBuffer;
@@ -366,10 +399,12 @@ async function collectAceaData(countryCode = 'FR', startYear = 2024) {
 // Export functions for use in collect.js (and unit tests)
 module.exports = {
   collectAceaData,
+  rowNumbersFromItems,
   parsePdfData,
   getAceaPdfUrls,
   assertPlausibleAceaData,
   MIN_MONTHLY_TOTAL,
+  YTD_ONLY_RELEASES,
   collectAceaDataES: () => collectAceaData('ES'),
   collectAceaDataIT: () => collectAceaData('IT'),
   collectAceaDataBE: () => collectAceaData('BE'),
