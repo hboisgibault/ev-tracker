@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useRef } from 'react';
+import { useMemo, useState, useRef } from 'react';
 import { 
   AreaChart, 
   Area, 
@@ -6,7 +6,6 @@ import {
   YAxis, 
   CartesianGrid, 
   Tooltip, 
-  Legend, 
   ResponsiveContainer 
 } from 'recharts';
 
@@ -150,7 +149,7 @@ export default function ModernChart({ labels, datasets, title, monthlyStats, ene
     
         <div className="mt-2 py-2">
           <CustomLegend 
-            payload={datasets.map((ds, i) => ({
+            payload={datasets.map((ds) => ({
               dataKey: ds.label,
               color: ds.borderColor,
               value: ds.label,
@@ -312,7 +311,7 @@ export default function ModernChart({ labels, datasets, title, monthlyStats, ene
 
       <div>
         <CustomLegend 
-          payload={datasets.map((ds, i) => ({
+          payload={datasets.map((ds) => ({
             dataKey: ds.label,
             color: ds.borderColor,
             value: ds.label,

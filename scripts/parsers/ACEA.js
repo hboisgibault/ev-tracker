@@ -43,7 +43,7 @@ async function fetchAceaPdf(year, month) {
       const buffer = await fetchFile(url);
       console.log(`  Success!`);
       return { buffer, url };
-    } catch (e) {
+    } catch {
       // Try next URL pattern
     }
   }
@@ -238,40 +238,6 @@ async function parsePdfData(pdfBuffer, countryCode) {
     console.error(`  Error parsing PDF: ${error.message}`);
     throw error;
   }
-}
-
-/**
- * Map ACEA fuel type names to normalized codes
- */
-function mapAceaFuelType(fuelName) {
-  if (!fuelName || typeof fuelName !== 'string') return 'UNKNOWN';
-  
-  const normalized = fuelName.toLowerCase().trim();
-  
-  const mapping = {
-    'electric': 'BEV',
-    'bev': 'BEV',
-    'battery electric': 'BEV',
-    'plug-in hybrid': 'PHEV',
-    'phev': 'PHEV',
-    'hybrid electric': 'HYBRID',
-    'hev': 'HYBRID',
-    'hybrid': 'HYBRID',
-    'diesel': 'DIESEL',
-    'petrol': 'GASOLINE',
-    'gasoline': 'GASOLINE',
-    'lpg': 'LPG_CNG_OTHER',
-    'cng': 'LPG_CNG_OTHER',
-    'other': 'OTHER',
-  };
-  
-  for (const [key, value] of Object.entries(mapping)) {
-    if (normalized.includes(key)) {
-      return value;
-    }
-  }
-  
-  return 'UNKNOWN';
 }
 
 /**

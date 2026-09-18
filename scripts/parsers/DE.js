@@ -26,39 +26,6 @@ function getKbaFileUrls(year, month) {
 }
 
 /**
- * Map German fuel type names to normalized codes
- */
-function mapGermanFuelType(fuelName) {
-  if (!fuelName || typeof fuelName !== 'string') return 'UNKNOWN';
-  
-  const normalized = fuelName.toLowerCase().trim();
-  
-  const mapping = {
-    'elektro': 'BEV',
-    'elektrisch': 'BEV',
-    'benzin': 'GASOLINE',
-    'diesel': 'DIESEL',
-    'hybrid': 'HYBRID',
-    'plug-in-hybrid': 'PHEV',
-    'plug-in hybrid': 'PHEV',
-    'erdgas': 'OTHER',
-    'cng': 'OTHER',
-    'flüssiggas': 'OTHER',
-    'lpg': 'OTHER',
-    'wasserstoff': 'OTHER',
-    'sonstige': 'OTHER'
-  };
-  
-  for (const [key, value] of Object.entries(mapping)) {
-    if (normalized.includes(key)) {
-      return value;
-    }
-  }
-  
-  return 'UNKNOWN';
-}
-
-/**
  * Parse KBA Excel file and extract fuel type data
  * The FZ10 file contains registrations by brand and model with fuel type columns
  */
@@ -186,7 +153,7 @@ async function fetchMonthData(year, month) {
         console.log(`  Success! Found ${Object.keys(fuelData).length} fuel types`);
         return { fuelData, sourceUrl: url };
       }
-    } catch (error) {
+    } catch {
       // Try next URL
       continue;
     }

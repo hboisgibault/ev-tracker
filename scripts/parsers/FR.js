@@ -74,7 +74,7 @@ async function findLatestPageUrl() {
       await fetchFile(url);
       console.log(`Trouvé !`);
       return url;
-    } catch (e) {
+    } catch {
       // Ignore 404, continue searching
     }
 

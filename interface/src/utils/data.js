@@ -13,7 +13,7 @@ export function loadZones() {
       code,
       slug: slugify(zone.name)
     }));
-  } catch (e) {
+  } catch {
     console.error('Error loading zones:', e);
     return [];
   }
@@ -38,7 +38,7 @@ export function loadCountryData(countryCode) {
     let files = [];
     try {
         files = fs.readdirSync(dataDir).filter((f) => f.endsWith('.json')).sort();
-    } catch (e) {
+    } catch {
         return { files: [], hasFossilData: false };
     }
 
@@ -53,7 +53,7 @@ export function loadCountryData(countryCode) {
                break;
             }
         }
-    } catch (e) {
+    } catch {
         // ignore
     }
 

@@ -99,7 +99,7 @@ async function fetchMonthData(monthCode) {
         await new Promise(resolve => setTimeout(resolve, 1000));
         try {
           return await fetchJson(fuelUrl);
-        } catch (retryError) {
+        } catch {
           console.error(`  Retry failed for batch ${i + idx}`);
           return [];
         }

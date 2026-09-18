@@ -28,7 +28,6 @@ async function runAllParsers() {
         const scriptPath = path.join(__dirname, './parsers/', parserInfo.script + '.js');
         if (fs.existsSync(scriptPath)) {
           console.log(`Running parser '${category}' for zone '${zoneCode}' (${parserInfo.script})`);
-          // eslint-disable-next-line
           await require(scriptPath)[parserInfo.function]();
         } else {
           console.warn(`Parser script not found: ${scriptPath}`);
