@@ -1,38 +1,23 @@
 const fs = require('fs');
 const path = require('path');
 const { fetchFile } = require('../util');
+const { validateMonthlyOutput } = require('../schema');
 const { JSDOM } = require('jsdom');
 const xlsx = require('xlsx');
 
 // Local fuel mapping for France; was previously in config/fuel_mapping.yaml
 const FRENCH_FUEL_MAP = {
-  DIESEL: [
-    'Gazole (thermique)',
-    'Diesel',
-  ],
-  GASOLINE: [
-    'Essence (thermique)',
-    'Essence',
-  ],
+  DIESEL: ['Gazole (thermique)', 'Diesel'],
+  GASOLINE: ['Essence (thermique)', 'Essence'],
   HYBRID: [
     'hybride gazole non rechargeable',
     'hybride essence non rechargeable',
     'gazole (y compris hybrides non rechargeables)',
-    'essence (y compris hybrides non rechargeables)'
+    'essence (y compris hybrides non rechargeables)',
   ],
-  PHEV: [
-    'hybride rechargeable'
-  ],
-  BEV: [
-    'Electrique',
-    'Electric',
-    'BEV',
-  ],
-  OTHER: [
-    'Gaz & ND',
-    'LPG',
-    'CNG',
-  ],
+  PHEV: ['hybride rechargeable'],
+  BEV: ['Electrique', 'Electric', 'BEV'],
+  OTHER: ['Gaz & ND', 'LPG', 'CNG'],
 };
 
 function normalizeFrenchFuel(label) {
@@ -54,9 +39,84 @@ function normalizeFrenchFuel(label) {
   return best || 'OTHER';
 }
 
+/**
+ * Locate the fuel header row in the French stats workbook.
+ * Pure function (no I/O) so it can be unit-tested with an XLSX fixture.
+ * @returns {{headerIndex: number, colMapping: Object, colDate: number}}
+ */
+function findFrenchHeader(rows) {
+  let headerIndex = -1;
+  let colDate = -1;
+  const colMapping = {}; // index -> normalizedFuelCode
+
+  for (let i = 0; i < rows.length; i++) {
+    const row = rows[i];
+    // On cherche une ligne qui contient "Gazole" ou "Essence" ou "Electrique"
+    const hasFuelRef = row.some(
+      (c) =>
+        c &&
+        typeof c === 'string' &&
+        (c.toLowerCase().includes('gazole') ||
+          c.toLowerCase().includes('essence') ||
+          c.toLowerCase().includes('electrique'))
+    );
+
+    if (hasFuelRef) {
+      headerIndex = i;
+      // Identifier les colonnes
+      for (let j = 0; j < row.length; j++) {
+        const val = row[j];
+        if (typeof val === 'string') {
+          // Normalize column header
+          const fuelCode = normalizeFrenchFuel(val);
+          if (fuelCode !== 'OTHER' && fuelCode !== 'UNKNOWN') {
+            colMapping[j] = fuelCode;
+          }
+        }
+      }
+
+      // On suppose que la date est en colonne 0 ("2011_01") si la colonne 0 n'est pas mappée comme un carburant
+      if (!colMapping[0]) {
+        colDate = 0;
+      }
+      break;
+    }
+  }
+
+  return { headerIndex, colMapping, colDate };
+}
+
+/**
+ * Aggregate one workbook row into normalized fuel totals.
+ * Pure function (no I/O).
+ */
+function aggregateFrenchRow(row, colMapping) {
+  const aggregated = {};
+  for (const [colIdx, fuelCode] of Object.entries(colMapping)) {
+    const val = parseInt(row[colIdx], 10) || 0;
+    if (val > 0) {
+      aggregated[fuelCode] = (aggregated[fuelCode] || 0) + val;
+    }
+  }
+  return aggregated;
+}
+
 function getFrenchMonthName(month) {
-  const mois = ['janvier','fevrier','mars','avril','mai','juin','juillet','aout','septembre','octobre','novembre','decembre'];
-  return mois[month-1];
+  const mois = [
+    'janvier',
+    'fevrier',
+    'mars',
+    'avril',
+    'mai',
+    'juin',
+    'juillet',
+    'aout',
+    'septembre',
+    'octobre',
+    'novembre',
+    'decembre',
+  ];
+  return mois[month - 1];
 }
 
 async function findLatestPageUrl() {
@@ -68,7 +128,7 @@ async function findLatestPageUrl() {
   for (let i = 0; i < 24; i++) {
     const monthName = getFrenchMonthName(month);
     const url = `https://www.statistiques.developpement-durable.gouv.fr/motorisations-des-vehicules-legers-neufs-emissions-de-co2-et-bonus-ecologique-${monthName}-${year}`;
-    
+
     try {
       console.log(`Vérification de l'URL : ${url}`);
       await fetchFile(url);
@@ -100,11 +160,16 @@ async function fetchAndProcessExcel() {
 
   // Recherche du lien vers le fichier de données (Excel)
   const allLinks = Array.from(doc.querySelectorAll('a'))
-    .map(a => ({ text: a.textContent.trim(), href: a.href }))
-    .filter(l => l.href && (l.href.includes('/media/') || l.href.endsWith('.xlsx')) && (l.href.includes('/download') || l.href.includes('.xlsx')));
-    
+    .map((a) => ({ text: a.textContent.trim(), href: a.href }))
+    .filter(
+      (l) =>
+        l.href &&
+        (l.href.includes('/media/') || l.href.endsWith('.xlsx')) &&
+        (l.href.includes('/download') || l.href.includes('.xlsx'))
+    );
+
   // Heuristique : chercher "données" dans le texte, sinon prendre le premier qui ressemble à un téléchargement de données
-  let target = allLinks.find(l => l.text.toLowerCase().includes('données')) || allLinks[0];
+  let target = allLinks.find((l) => l.text.toLowerCase().includes('données')) || allLinks[0];
 
   if (!target) {
     console.error('Aucun lien de téléchargement Excel trouvé sur la page.');
@@ -113,7 +178,10 @@ async function fetchAndProcessExcel() {
 
   let xlsxUrl = target.href;
   if (!xlsxUrl.startsWith('http')) {
-    xlsxUrl = 'https://www.statistiques.developpement-durable.gouv.fr' + (xlsxUrl.startsWith('/') ? '' : '/') + xlsxUrl;
+    xlsxUrl =
+      'https://www.statistiques.developpement-durable.gouv.fr' +
+      (xlsxUrl.startsWith('/') ? '' : '/') +
+      xlsxUrl;
   }
   console.log(`Téléchargement du fichier Excel : ${xlsxUrl}`);
 
@@ -127,40 +195,12 @@ async function fetchAndProcessExcel() {
   const rows = xlsx.utils.sheet_to_json(ws, { header: 1 });
 
   // Recherche de la ligne d'en-tête
-  let headerIndex = -1;
-  let colDate = -1;
-  const colMapping = {}; // index -> normalizedFuelCode
-
-  for (let i = 0; i < rows.length; i++) {
-    const row = rows[i];
-    // On cherche une ligne qui contient "Gazole" ou "Essence" ou "Electrique"
-    const hasFuelRef = row.some(c => c && typeof c === 'string' && (c.toLowerCase().includes('gazole') || c.toLowerCase().includes('essence') || c.toLowerCase().includes('electrique')));
-    
-    if (hasFuelRef) {
-      headerIndex = i;
-      // Identifier les colonnes
-      for (let j = 0; j < row.length; j++) {
-        const val = row[j];
-        if (typeof val === 'string') {
-          // Normalize column header
-          const fuelCode = normalizeFrenchFuel(val)
-          if (fuelCode !== 'OTHER' && fuelCode !== 'UNKNOWN') {
-             colMapping[j] = fuelCode;
-          }
-        }
-      }
-      
-      // On suppose que la date est en colonne 0 ("2011_01") si la colonne 0 n'est pas mappée comme un carburant
-      if (!colMapping[0]) {
-        colDate = 0;
-      }
-      break;
-    }
-  }
+  const { headerIndex, colMapping, colDate } = findFrenchHeader(rows);
 
   if (headerIndex === -1) {
-    console.error('Impossible de trouver les en-têtes (types de motorisation) dans le fichier Excel.');
-    return;
+    throw new Error(
+      'Impossible de trouver les en-têtes (types de motorisation) dans le fichier Excel.'
+    );
   }
 
   console.log(`En-têtes trouvés ligne ${headerIndex}. Base date colonne ${colDate}.`);
@@ -182,21 +222,15 @@ async function fetchAndProcessExcel() {
     const month = parseInt(mStr, 10);
 
     // Agréger les valeurs par type de carburant normalisé
-    const aggregated = {};
-    for (const [colIdx, fuelCode] of Object.entries(colMapping)) {
-      const val = parseInt(row[colIdx], 10) || 0;
-      if (val > 0) {
-        aggregated[fuelCode] = (aggregated[fuelCode] || 0) + val;
-      }
-    }
+    const aggregated = aggregateFrenchRow(row, colMapping);
 
     const data = [];
     for (const [fuelCode, total] of Object.entries(aggregated)) {
-      data.push({ 
-        marque: 'Toutes marques', 
-        modele: 'Tous modèles', 
-        total, 
-        energie: fuelCode // Code normalisé (ex: BEV, HYBRID, PHEV, DIESEL...)
+      data.push({
+        marque: 'Toutes marques',
+        modele: 'Tous modèles',
+        total,
+        energie: fuelCode, // Code normalisé (ex: BEV, HYBRID, PHEV, DIESEL...)
       });
     }
 
@@ -206,7 +240,9 @@ async function fetchAndProcessExcel() {
         // console.log(`Fichier existant ignoré : ${outPath}`);
         continue;
       }
-      fs.writeFileSync(outPath, JSON.stringify({ year, month, sourceUrl: xlsxUrl, data, region: 'FR', type: 'all' }, null, 2));
+      const output = { year, month, sourceUrl: xlsxUrl, data, region: 'FR', type: 'all' };
+      validateMonthlyOutput(output);
+      fs.writeFileSync(outPath, JSON.stringify(output, null, 2));
       count++;
     }
   }
@@ -221,5 +257,8 @@ async function fetchAllEVData() {
 }
 
 module.exports = {
-  fetchAllEVData
+  fetchAllEVData,
+  normalizeFrenchFuel,
+  findFrenchHeader,
+  aggregateFrenchRow,
 };

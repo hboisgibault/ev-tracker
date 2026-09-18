@@ -12,16 +12,18 @@ const zones = yaml.load(fs.readFileSync(zonesPath, 'utf8')).zones;
 const targetZone = process.argv[2];
 
 async function runAllParsers() {
-  const zonesToProcess = targetZone 
-    ? (zones[targetZone] ? { [targetZone]: zones[targetZone] } : {})
+  const zonesToProcess = targetZone
+    ? zones[targetZone]
+      ? { [targetZone]: zones[targetZone] }
+      : {}
     : zones;
-  
+
   if (targetZone && !zones[targetZone]) {
     console.error(`Zone '${targetZone}' not found in config/zones.yaml`);
     console.log('Available zones:', Object.keys(zones).join(', '));
     process.exit(1);
   }
-  
+
   for (const [zoneCode, zone] of Object.entries(zonesToProcess)) {
     if (zone.parsers) {
       for (const [category, parserInfo] of Object.entries(zone.parsers)) {
@@ -42,7 +44,7 @@ runAllParsers()
     console.log('All parsers finished.');
     process.exit(0);
   })
-  .catch(e => { 
-    console.error('Error while running parsers:', e); 
-    process.exit(1); 
+  .catch((e) => {
+    console.error('Error while running parsers:', e);
+    process.exit(1);
   });

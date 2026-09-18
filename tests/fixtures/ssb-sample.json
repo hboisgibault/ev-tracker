@@ -1,0 +1,26 @@
+{
+  "dimension": {
+    "TypeRegistrering": {
+      "category": {
+        "index": { "N": 0 }
+      }
+    },
+    "DrivstoffType": {
+      "category": {
+        "index": { "19": 0, "20": 1 }
+      }
+    },
+    "ContentsCode": {
+      "category": {
+        "index": { "Personbiler": 0 }
+      }
+    },
+    "Tid": {
+      "category": {
+        "index": { "2024M01": 0, "2024M02": 1 }
+      }
+    }
+  },
+  "size": [1, 2, 1, 2],
+  "value": [1200, 900, 300, 150]
+}

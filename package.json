@@ -4,12 +4,14 @@
   "description": "Collection and tracking of electric vehicle and energy statistics by country.",
   "main": "index.js",
   "engines": {
-    "node": ">=20"
+    "node": "22"
   },
   "scripts": {
     "collect": "node scripts/collect.js",
     "lint": "eslint .",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "format:check": "prettier --check scripts tests",
+    "test": "vitest run"
   },
   "dependencies": {
     "adm-zip": "^0.5.16",
@@ -17,7 +19,8 @@
     "js-yaml": "^4.1.1",
     "jsdom": "^27.4.0",
     "pdfjs-dist": "4.9.155",
-    "xlsx": "^0.18.5"
+    "xlsx": "^0.18.5",
+    "zod": "^4.6.5"
   },
   "devDependencies": {
     "@typescript-eslint/parser": "^8.70.0",
@@ -27,7 +30,8 @@
     "eslint-plugin-react": "^7.37.5",
     "globals": "^17.2.0",
     "prettier": "^3.8.1",
-    "prettier-plugin-astro": "^1.0.1"
+    "prettier-plugin-astro": "^1.0.1",
+    "vitest": "^5.0.1"
   },
   "author": "Henry Boisgibault",
   "license": "GPL-3.0"
