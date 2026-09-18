@@ -178,4 +178,18 @@ describe('ACEA plausibility guard', () => {
     ];
     expect(() => assertPlausibleAceaData(corrupt, 'ES')).toThrow(/implausible/i);
   });
+
+  it('rejects the May-2026 cumulative-row mis-parse (ES/IT 1.8M)', () => {
+    // Exact vector persisted on main for ES/IT 2026-05: a YTD/EU-total row
+    // matched as a month (BEV 1795071). Max legit month is ~288k (DE 2022-12).
+    const monster = [
+      { energie: 'BEV', total: 1795071 },
+      { energie: 'PHEV', total: 5 },
+      { energie: 'HYBRID', total: 0 },
+      { energie: 'DIESEL', total: 0 },
+      { energie: 'GASOLINE', total: 0 },
+      { energie: 'OTHER', total: 9 },
+    ];
+    expect(() => assertPlausibleAceaData(monster, 'ES')).toThrow(/implausible/i);
+  });
 });

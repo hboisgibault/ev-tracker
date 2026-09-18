@@ -178,9 +178,11 @@ function saveMonthlyData(monthCode, fuelData) {
   }
 
   const monthTotal = formattedData.reduce((sum, row) => sum + row.total, 0);
-  if (monthTotal < 1000) {
+  // Legit NL months read 15-48k; the floor rejects partial fetches, the
+  // ceiling rejects wrong-table extractions (cf. ACEA 1.8M monsters).
+  if (monthTotal < 1000 || monthTotal > 150000) {
     throw new Error(
-      `Implausible NL data for ${monthCode}: monthly total is ${monthTotal} (< 1000). Refusing to persist.`
+      `Implausible NL data for ${monthCode}: monthly total is ${monthTotal} (expected 1000-150000). Refusing to persist.`
     );
   }
 

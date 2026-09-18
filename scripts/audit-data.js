@@ -7,8 +7,7 @@
 
 const fs = require('fs');
 const path = require('path');
-
-const MIN_MONTHLY_TOTAL = 200;
+const { MIN_MONTHLY_TOTAL, MAX_MONTHLY_TOTAL } = require('./parsers/ACEA.js');
 const STRICT = process.argv.includes('--strict');
 
 function monthRange(min, max) {
@@ -97,9 +96,9 @@ for (const zone of zones.sort()) {
       byEnergy[row.energie] = (byEnergy[row.energie] || 0) + row.total;
     }
     const total = Object.values(byEnergy).reduce((a, b) => a + b, 0);
-    if (total < MIN_MONTHLY_TOTAL)
+    if (total < MIN_MONTHLY_TOTAL || total > MAX_MONTHLY_TOTAL)
       errors.push(
-        `${zone}/${file}: micro-total ${total} (< ${MIN_MONTHLY_TOTAL}) -> ${JSON.stringify(byEnergy)}`
+        `${zone}/${file}: implausible total ${total} (expected ${MIN_MONTHLY_TOTAL}-${MAX_MONTHLY_TOTAL}) -> ${JSON.stringify(byEnergy)}`
       );
     if (
       (byEnergy.PHEV === 0) !== (byEnergy.HYBRID === 0) &&

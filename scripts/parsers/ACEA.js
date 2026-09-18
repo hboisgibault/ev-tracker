@@ -9,6 +9,12 @@ const { validateMonthlyOutput } = require('../schema');
 // produced sums of 9-49. Anything below this is a broken extraction.
 const MIN_MONTHLY_TOTAL = 200;
 
+// Plausibility ceiling for one country's monthly total. Max legit month in
+// the whole dataset is ~288k (DE 2022-12, bonus pull-forward); the May 2026
+// ES/IT mis-parse matched a cumulative row and persisted 1.8M. Anything
+// above this is a wrong-row extraction (YTD/EU-total), not a real month.
+const MAX_MONTHLY_TOTAL = 500000;
+
 // ACEA releases with no monthly country x fuel table (cumulative Jan-Feb
 // YTD only). Proven 2026-09-18: the February 2025 PDF holds YTD blocks per
 // fuel plus a by-manufacturer table, so February 2025 cannot be extracted
@@ -320,9 +326,9 @@ async function parsePdfData(pdfBuffer, countryCode) {
  */
 function assertPlausibleAceaData(rawData, countryCode) {
   const sum = rawData.reduce((acc, item) => acc + item.total, 0);
-  if (sum < MIN_MONTHLY_TOTAL) {
+  if (sum < MIN_MONTHLY_TOTAL || sum > MAX_MONTHLY_TOTAL) {
     throw new Error(
-      `Implausible ACEA data for ${countryCode}: monthly total is ${sum} (< ${MIN_MONTHLY_TOTAL}). ` +
+      `Implausible ACEA data for ${countryCode}: monthly total is ${sum} (expected ${MIN_MONTHLY_TOTAL}-${MAX_MONTHLY_TOTAL}). ` +
         `The PDF layout probably changed; refusing to persist.`
     );
   }
@@ -424,6 +430,7 @@ module.exports = {
   getAceaPdfUrls,
   assertPlausibleAceaData,
   MIN_MONTHLY_TOTAL,
+  MAX_MONTHLY_TOTAL,
   YTD_ONLY_RELEASES,
   collectAceaDataES: () => collectAceaData('ES'),
   collectAceaDataIT: () => collectAceaData('IT'),
