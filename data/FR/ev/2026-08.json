@@ -18,7 +18,7 @@
     {
       "marque": "Toutes marques",
       "modele": "Tous modèles",
-      "total": 85059,
+      "total": 35752,
       "energie": "HYBRID"
     },
     {
@@ -32,6 +32,12 @@
       "modele": "Tous modèles",
       "total": 36594,
       "energie": "BEV"
+    },
+    {
+      "marque": "Toutes marques",
+      "modele": "Tous modèles",
+      "total": 3865,
+      "energie": "OTHER"
     }
   ],
   "region": "FR",

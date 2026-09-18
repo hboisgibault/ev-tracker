@@ -6,26 +6,26 @@
     {
       "marque": "ALL",
       "modele": "ALL",
-      "total": 905,
+      "total": 18578,
       "energie": "BEV"
     },
     {
       "marque": "ALL",
       "modele": "ALL",
-      "total": 519,
+      "total": 12054,
       "energie": "GASOLINE"
     },
     {
       "marque": "ALL",
       "modele": "ALL",
-      "total": 15,
-      "energie": "DIESEL"
+      "total": 99,
+      "energie": "OTHER"
     },
     {
       "marque": "ALL",
       "modele": "ALL",
-      "total": 1,
-      "energie": "OTHER"
+      "total": 176,
+      "energie": "DIESEL"
     }
   ],
   "region": "NL",

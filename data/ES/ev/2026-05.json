@@ -6,37 +6,37 @@
     {
       "marque": "Toutes marques",
       "modele": "Tous modèles",
-      "total": 1795071,
+      "total": 12049,
       "energie": "BEV"
     },
     {
       "marque": "Toutes marques",
       "modele": "Tous modèles",
-      "total": 5,
+      "total": 13741,
       "energie": "PHEV"
     },
     {
       "marque": "Toutes marques",
       "modele": "Tous modèles",
-      "total": 0,
+      "total": 53414,
       "energie": "HYBRID"
     },
     {
       "marque": "Toutes marques",
       "modele": "Tous modèles",
-      "total": 0,
+      "total": 4139,
       "energie": "DIESEL"
     },
     {
       "marque": "Toutes marques",
       "modele": "Tous modèles",
-      "total": 0,
+      "total": 24744,
       "energie": "GASOLINE"
     },
     {
       "marque": "Toutes marques",
       "modele": "Tous modèles",
-      "total": 9,
+      "total": 3807,
       "energie": "OTHER"
     }
   ]

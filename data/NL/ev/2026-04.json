@@ -6,25 +6,25 @@
     {
       "marque": "ALL",
       "modele": "ALL",
-      "total": 405,
+      "total": 15805,
       "energie": "BEV"
     },
     {
       "marque": "ALL",
       "modele": "ALL",
-      "total": 307,
+      "total": 10769,
       "energie": "GASOLINE"
     },
     {
       "marque": "ALL",
       "modele": "ALL",
-      "total": 11,
+      "total": 253,
       "energie": "DIESEL"
     },
     {
       "marque": "ALL",
       "modele": "ALL",
-      "total": 2,
+      "total": 82,
       "energie": "OTHER"
     }
   ],
