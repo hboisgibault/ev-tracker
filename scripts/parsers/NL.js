@@ -4,7 +4,15 @@ const { ensureDir, filterMissingMonths, getMonthsSinceStart, fetchJson } = requi
 const { validateMonthlyOutput } = require('../schema');
 
 /**
- * Map Dutch fuel descriptions to normalized codes
+ * Map Dutch fuel descriptions to normalized codes.
+ *
+ * Source limitation (verified 2026-09-18 via a distinct query on the RDW
+ * brandstof table): it exposes no hybrid or plug-in-hybrid category —
+ * only Benzine, Diesel, Elektriciteit, LPG, CNG, LNG, Waterstof, Alcohol.
+ * Dutch (P)HEV registrations therefore hide inside Benzine/Diesel and NL
+ * files structurally lack PHEV/HYBRID rows. This is faithful to the source
+ * but NOT comparable fuel-by-fuel with ACEA countries; only BEV and totals
+ * should be compared cross-country.
  */
 function mapFuelType(brandstof) {
   const mapping = {
@@ -69,6 +77,7 @@ async function fetchMonthData(monthCode) {
   // Step 2: For each vehicle, get fuel type from brandstof table
   // Use moderate parallel processing to avoid API rate limits
   const fuelCounts = {};
+  let failedBatches = 0;
   const batchSize = 500; // Moderate batch size
   const parallelRequests = 3; // Limit parallel requests to avoid 500 errors
 
@@ -106,6 +115,7 @@ async function fetchMonthData(monthCode) {
           return await fetchJson(fuelUrl);
         } catch {
           console.error(`  Retry failed for batch ${i + idx}`);
+          failedBatches++;
           return [];
         }
       }
@@ -132,11 +142,21 @@ async function fetchMonthData(monthCode) {
     await new Promise((resolve) => setTimeout(resolve, 200));
   }
 
+  if (failedBatches > 0) {
+    // Never persist a partial month: a failed batch means vehicles are
+    // missing and the file would read as a market collapse (cf. 2026-02
+    // persisted with 659 vehicles instead of ~25 000).
+    throw new Error(`Incomplete RDW fetch for ${monthCode}: ${failedBatches} failed batches`);
+  }
+
   return fuelCounts;
 }
 
 /**
- * Save monthly data to file
+ * Save monthly data to file.
+ * Refuses implausible months instead of persisting them: legit NL months
+ * are >= ~20 000 registrations, so anything below the floor is a partial
+ * or broken extraction (cf. 2026-02/03 persisted with 659/1 vehicles).
  */
 function saveMonthlyData(monthCode, fuelData) {
   const [year, month] = monthCode.split('-');
@@ -155,6 +175,13 @@ function saveMonthlyData(monthCode, fuelData) {
       total: total,
       energie: energie,
     });
+  }
+
+  const monthTotal = formattedData.reduce((sum, row) => sum + row.total, 0);
+  if (monthTotal < 1000) {
+    throw new Error(
+      `Implausible NL data for ${monthCode}: monthly total is ${monthTotal} (< 1000). Refusing to persist.`
+    );
   }
 
   const output = {
@@ -219,5 +246,6 @@ async function fetchAllEVData() {
 module.exports = {
   fetchAllEVData,
   fetchMonthData,
+  saveMonthlyData,
   mapFuelType,
 };
