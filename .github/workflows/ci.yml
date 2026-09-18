@@ -35,6 +35,12 @@ jobs:
       - name: Tests
         run: pnpm test
 
+      # Data coherence gate: micro-totals, filename mismatches, negative or
+      # empty totals fail the build. Coverage gaps and seasonal ruptures are
+      # warnings only (see scripts/audit-data.js).
+      - name: Audit data coherence
+        run: pnpm run audit
+
       # Gated on critical only: 15 high / 7 moderate advisories are
       # pre-existing transitive debt (xlsx, adm-zip, js-yaml via eslint…)
       # with no fixed range. Revisit when those upstreams ship fixes.
